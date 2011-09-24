@@ -1,0 +1,4 @@
+postcards.db
+*.pyc
+.*.swo
+.*.swp
