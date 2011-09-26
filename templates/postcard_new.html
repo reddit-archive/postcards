@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block scripts %}
+<script src="/static/lib/jquery-1.6.2.min.js"></script>
+<script src="/static/lib/jquery-ui-1.8.16.custom.min.js"></script>
+<script src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script src="/static/postcard.js"></script>
+<link rel="stylesheet" href="/static/lib/jquery-ui-1.8.16.custom.css">
+{% endblock %}
+{% block content %}
+
+<form id="postcard-form" action="/postcard/new" method="POST" enctype="multipart/form-data">
+<table>
+<tbody>
+<tr>
+    <th>{{ form.username.label }}</th>
+    <td>
+        {{ form.username(maxlength=20, autocomplete='off') }}
+        {% if form.username.errors: %}<span class="error">X</span>{% endif %}
+    </td>
+</tr>
+<tr>
+    <th>{{ form.origin.label }}</th>
+    <td>
+        {{ form.origin(autocomplete='off') }}
+        {% if form.origin.errors: %}<span class="error">X</span>{% endif %}
+    </td>
+</tr>
+<tr>
+    <th>{{ form.date.label }}</th>
+    <td>
+        {{ form.date(autocomplete='off') }}
+        {% if form.date.errors: %}<span class="error">X</span>{% endif %}
+    </td>
+</tr>
+<tr>
+    <th>{{ form.front.label }}</th>
+    <td>
+        <input type="file" name="front" id="front">
+    </td>
+</tr>
+<tr>
+    <th>{{ form.back.label }}</th>
+    <td>
+        <input type="file" name="back" id="back">
+    </td>
+</tr>
+<tr>
+    <th>{{ form.tags.label }}</th>
+    <td>{{ form.tags() }}</th>
+</tr>
+</tbody>
+<tfoot>
+<tr>
+    <td colspan="2">
+        <input type="hidden" id="origin_country" name="origin_country">
+        <input type="hidden" id="origin_latitude" name="origin_latitude">
+        <input type="hidden" id="origin_longitude" name="origin_longitude">
+        {{ form.csrf }}
+        <input type="submit" id="submit" disabled>
+    </td>
+</tr>
+</tfoot>
+</table>
+</form>
+
+{% endblock %}
