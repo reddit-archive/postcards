@@ -25,6 +25,7 @@ class Postcard(db.Model):
     longitude = db.Column(db.Numeric)
     front = db.Column(db.String)
     back = db.Column(db.String)
+    deleted = db.Column(db.Boolean)
     tags = db.relationship("Tag")
 
 class Tag(db.Model):
@@ -112,6 +113,14 @@ def upload():
         policy='public-read',
     )
     return filename
+
+@app.route('/postcard/delete', methods=['POST', 'DELETE'])
+def delete():
+    id = int(request.form['postcard-id'])
+    postcard = db.session.query(Postcard).filter_by(id=id).one()
+    postcard.deleted = True
+    db.session.commit()
+    return redirect('/')
 
 if __name__ == "__main__":
     db.create_all()
