@@ -1,0 +1,19 @@
+body {
+    font-family: helvetica, sans-serif;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+}
+
+th, td {
+    padding: 0 .5em;
+}
+
+tr:nth-child(even) {
+    background: #ccc;
+}

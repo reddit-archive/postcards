@@ -55,7 +55,25 @@ class PostcardForm(wtf.Form):
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    #top_tags = (db.session.query(Tag)
+                    #.filter(Tag.tag != '')
+                    #.group_by(Tag.tag)
+                    #.order_by(db.desc(db.func.count(Tag.tag)))
+                    #.limit(10))
+
+    postcards = {}
+    for postcard in db.session.query(Postcard).filter(Postcard.deleted == False).order_by(db.desc(Postcard.date)):
+        postcards[postcard.id] = postcard
+
+    for tag in db.session.query(Tag):
+        if tag.postcard_id not in postcards:
+            continue
+        postcard = postcards[tag.postcard_id]
+        if not hasattr(postcard, '_tags'):
+            postcard._tags = []
+        postcard._tags.append(tag.tag)
+
+    return render_template('home.html', postcards=postcards.values())
 
 @app.route('/postcard/new', methods=['GET', 'POST'])
 def new_postcard_form():

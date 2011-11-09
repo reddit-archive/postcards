@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p><a href="{{ url_for('.new_postcard_form') }}">add new postcard</a></p>
+
+<table>
+<thead>
+<tr>
+    <th>delete</th>
+    <th>country</th>
+    <th>date</th>
+    <th>sender</th>
+    <th>front</th>
+    <th>back</th>
+    <th>tags</th>
+</tr>
+</thead>
+<tbody>
+{% for postcard in postcards: %}
+<tr>
+    <td>
+        <form method="POST" action="{{ url_for('.delete') }}">
+            <input type="hidden" name="postcard-id" value="{{ postcard.id }}">
+            <input type="submit" value="delete">
+        </form>
+    </td>
+    <td>{{ postcard.country }}</td>
+    <td>{{ postcard.date.strftime('%Y-%m-%d') }}</td>
+    <td><a href="http://www.reddit.com/user/{{ postcard.user }}">{{ postcard.user }}</a></td>
+    {% if postcard.front %}
+    <td><a href="http://postcards.reddit.com.s3.amazonaws.com/{{ postcard.front }}">front</a></td>
+    {% else %}
+    <td></td>
+    {% endif %}
+    {% if postcard.back %}
+    <td><a href="http://postcards.reddit.com.s3.amazonaws.com/{{ postcard.back }}">back</a></td>
+    {% else %}
+    <td></td>
+    {% endif %}
+    <td>{{ ', '.join(postcard._tags) }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}
