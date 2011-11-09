@@ -17,3 +17,9 @@ th, td {
 tr:nth-child(even) {
     background: #ccc;
 }
+
+a.thumbnail {
+    height: 70px;
+    width: 70px;
+    display: inline-block;
+}

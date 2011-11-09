@@ -3,6 +3,9 @@ import hashlib
 import base64
 import os
 import datetime
+import urllib
+import Image
+import cStringIO
 from flask import Flask, render_template, redirect, request, flash
 from flaskext.sqlalchemy import SQLAlchemy
 from flaskext import wtf
@@ -13,7 +16,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///postcards.db'
 app.secret_key = os.urandom(24)
 db = SQLAlchemy(app)
 s3 = boto.connect_s3()
-bucket = s3.get_bucket('postcards.reddit.com')
+BUCKET_NAME = 'postcards.reddit.com'
+bucket = s3.get_bucket(BUCKET_NAME)
 
 class Postcard(db.Model):
     __tablename__ = 'postcards'
@@ -25,6 +29,8 @@ class Postcard(db.Model):
     longitude = db.Column(db.Numeric)
     front = db.Column(db.String)
     back = db.Column(db.String)
+    front_thumb = db.Column(db.String)
+    back_thumb = db.Column(db.String)
     deleted = db.Column(db.Boolean)
     tags = db.relationship("Tag")
 
@@ -74,7 +80,11 @@ def home():
             postcard._tags = []
         postcard._tags.append(tag.tag)
 
-    return render_template('home.html', postcards=postcards.values())
+    return render_template(
+        'home.html',
+        postcards=postcards.values(),
+        url_base='http://' + BUCKET_NAME + '.s3.amazonaws.com/'
+    )
 
 @app.route('/postcard/new', methods=['GET', 'POST'])
 def new_postcard_form():
@@ -87,7 +97,11 @@ def new_postcard_form():
         postcard.latitude = form.origin_latitude.data
         postcard.longitude = form.origin_longitude.data
         postcard.front = form.front.data
+        if postcard.front:
+            postcard.front_thumb = thumbnail_image(postcard.front)
         postcard.back = form.back.data
+        if postcard.back:
+            postcard.back_thumb = thumbnail_image(postcard.back)
         db.session.add(postcard)
 
         for tag in (x.strip() for x in form.tags.data.split(',')):
@@ -104,15 +118,29 @@ def new_postcard_form():
 @app.route('/upload', methods=['POST'])
 def upload():
     data = base64.b64decode(request.data)
+    return upload_to_s3(data)
+
+def upload_to_s3(data, content_type='image/jpeg'):
     digest = hashlib.sha1(data).digest()
     filename = base64.urlsafe_b64encode(digest[:8]).rstrip('=') + '.jpg'
     key = bucket.new_key(filename)
     key.set_contents_from_string(
         data,
-        headers={'Content-Type': 'image/jpeg'},
+        headers={'Content-Type': content_type},
         policy='public-read',
+        replace=True,
     )
     return filename
+
+def thumbnail_image(name):
+    url = 'http://' + BUCKET_NAME + '.s3.amazonaws.com/' + name
+    image_bytes = urllib.urlopen(url).read()
+    image_file = cStringIO.StringIO(image_bytes)
+    image = Image.open(image_file)
+    image.thumbnail((70, 70), Image.ANTIALIAS)
+    output_file = cStringIO.StringIO()
+    image.save(output_file, 'jpeg')
+    return upload_to_s3(output_file.getvalue())
 
 @app.route('/postcard/delete', methods=['POST', 'DELETE'])
 def delete():
