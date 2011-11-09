@@ -102,6 +102,7 @@ def new_postcard_form():
         postcard.back = form.back.data
         if postcard.back:
             postcard.back_thumb = thumbnail_image(postcard.back)
+        postcard.deleted = False
         db.session.add(postcard)
 
         for tag in (x.strip() for x in form.tags.data.split(',')):
