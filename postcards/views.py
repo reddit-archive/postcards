@@ -1,44 +1,13 @@
-import boto
-import hashlib
 import base64
-import os
 import datetime
-import urllib
-import Image
-import cStringIO
-from flask import Flask, render_template, redirect, request, flash
-from flaskext.sqlalchemy import SQLAlchemy
+
+from flask import render_template, redirect, request, flash
 from flaskext import wtf
 
-app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///postcards.db'
-app.secret_key = os.urandom(24)
-db = SQLAlchemy(app)
-s3 = boto.connect_s3()
-BUCKET_NAME = 'postcards.reddit.com'
-bucket = s3.get_bucket(BUCKET_NAME)
+from postcards import app
+from postcards.models import db, Postcard, Tag
+from postcards.lib.utils import BUCKET_NAME, upload_to_s3, thumbnail_image
 
-class Postcard(db.Model):
-    __tablename__ = 'postcards'
-    id = db.Column(db.Integer, primary_key=True)
-    user = db.Column(db.String(20))
-    country = db.Column(db.String(3))
-    date = db.Column(db.Date)
-    latitude = db.Column(db.Numeric)
-    longitude = db.Column(db.Numeric)
-    front = db.Column(db.String)
-    back = db.Column(db.String)
-    front_thumb = db.Column(db.String)
-    back_thumb = db.Column(db.String)
-    deleted = db.Column(db.Boolean)
-    tags = db.relationship("Tag")
-
-class Tag(db.Model):
-    __tablename__ = 'tags'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    postcard_id = db.Column(db.Integer, db.ForeignKey('postcards.id'))
-    tag = db.Column(db.String)
 
 class PostcardForm(wtf.Form):
     username = wtf.TextField(
@@ -59,6 +28,7 @@ class PostcardForm(wtf.Form):
     front = wtf.TextField('front of card')
     back = wtf.TextField('back of card')
     tags = wtf.TextField('tags (comma-delimited)')
+
 
 @app.route('/')
 def home():
@@ -85,6 +55,7 @@ def home():
         postcards=postcards.values(),
         url_base='http://' + BUCKET_NAME + '.s3.amazonaws.com/'
     )
+
 
 @app.route('/postcard/new', methods=['GET', 'POST'])
 def new_postcard_form():
@@ -116,32 +87,12 @@ def new_postcard_form():
         return redirect('/postcard/new')
     return render_template('postcard_new.html', form=form)
 
+
 @app.route('/upload', methods=['POST'])
 def upload():
     data = base64.b64decode(request.data)
     return upload_to_s3(data)
 
-def upload_to_s3(data, content_type='image/jpeg'):
-    digest = hashlib.sha1(data).digest()
-    filename = base64.urlsafe_b64encode(digest[:8]).rstrip('=') + '.jpg'
-    key = bucket.new_key(filename)
-    key.set_contents_from_string(
-        data,
-        headers={'Content-Type': content_type},
-        policy='public-read',
-        replace=True,
-    )
-    return filename
-
-def thumbnail_image(name):
-    url = 'http://' + BUCKET_NAME + '.s3.amazonaws.com/' + name
-    image_bytes = urllib.urlopen(url).read()
-    image_file = cStringIO.StringIO(image_bytes)
-    image = Image.open(image_file)
-    image.thumbnail((70, 70), Image.ANTIALIAS)
-    output_file = cStringIO.StringIO()
-    image.save(output_file, 'jpeg')
-    return upload_to_s3(output_file.getvalue())
 
 @app.route('/postcard/delete', methods=['POST', 'DELETE'])
 def delete():
@@ -150,7 +101,3 @@ def delete():
     postcard.deleted = True
     db.session.commit()
     return redirect('/')
-
-if __name__ == "__main__":
-    db.create_all()
-    app.run(debug=True)
