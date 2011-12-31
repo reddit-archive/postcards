@@ -6,7 +6,7 @@ from flaskext import wtf
 
 from postcards import app
 from postcards.models import db, Postcard, Tag
-from postcards.lib.utils import upload_to_s3, generate_thumbnails
+from postcards.lib.utils import upload_to_s3, generate_thumbnails, submit_link_to_postcard
 
 
 class PostcardForm(wtf.Form):
@@ -112,5 +112,8 @@ def publish():
         abort(403)
     postcard.published = True
     db.session.commit()
+
+    submit_link_to_postcard(postcard.id)
+
     flash('postcard published!')
     return redirect('/')

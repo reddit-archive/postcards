@@ -19,8 +19,10 @@
 <tbody>
 {% for postcard in postcards: %}
 <tr>
-    {% if postcard.published: %}
-    <td class="status-published" colspan="2">Published</td>
+    {% if postcard.published and postcard.submission: %}
+    <td class="status-published" colspan="2"><a href="http://www.reddit.com{{ postcard.submission }}">Published</a></td>
+    {% elif postcard.published: %}
+    <td class="status-published" colspan="2">Publishing&hellip;</td>
     {% else: %}
     <td>
         <form method="POST" action="{{ url_for('.delete') }}">
