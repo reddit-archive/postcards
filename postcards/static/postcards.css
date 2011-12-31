@@ -1,5 +1,22 @@
 body {
     font-family: helvetica, sans-serif;
+    width: 800px;
+    margin: 0 auto;
+    overflow-y: scroll;
+}
+
+h1 a {
+    text-decoration: none;
+    color: black;
+}
+
+ul.flashes {
+    color: #4a4;
+    background: #cfc;
+    font-variant: small-caps;
+    list-style-type: none;
+    padding: .2em 1em;
+    border: 2px solid #9c9;
 }
 
 table {
@@ -12,10 +29,23 @@ th {
 
 th, td {
     padding: 0 .5em;
+    vertical-align: middle;
 }
 
-tr:nth-child(even) {
-    background: #ccc;
+#postcards {
+    width: 100%;
+}
+
+#postcards th {
+    text-transform: uppercase;
+}
+
+#postcards tr:nth-child(even) {
+    background: #e0e0e0;
+}
+
+#postcards tr {
+    border-bottom: 1px solid #666;
 }
 
 a.thumbnail {
@@ -30,7 +60,41 @@ a.thumbnail {
     text-align: center;
 }
 
-nav.pagination {
+nav.site {
+    border-bottom: 2px solid black;
+}
+
+nav.site ol {
+    margin: 0;
+    padding: 0;
+}
+
+nav.site li {
+    display: inline-block;
+    margin: 0 0 0 .3em;
+}
+
+nav.site li a {
+    text-decoration: none;
+    border: 2px solid black;
+    padding: .3em .3em 0 .3em;
+    background-color: #ccc;
+    color: black;
+}
+
+nav.site li a:hover {
+    background: #e0e0e0;
+}
+
+nav.site li.current a {
+    color: black;
+    background: white;
+    font-weight: bold;
+    border-bottom: 2px solid white;
+}
+
+nav.site li.current a:hover {
+    background: white;
 }
 
 nav.pagination ol {

@@ -30,6 +30,14 @@ class PostcardForm(wtf.Form):
     tags = wtf.TextField('tags (comma-delimited)')
 
 
+@app.context_processor
+def add_site_nav():
+    return dict(site_nav=[
+        ("home", "home"),
+        ("new_postcard_form", "add postcard"),
+    ])
+
+
 @app.route('/')
 def home():
     page_number = int(request.args.get('page', 1))

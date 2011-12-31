@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 
-{% block content %}
-<p><a href="{{ url_for('.new_postcard_form') }}">add new postcard</a></p>
-
+{% macro render_pagination() -%}
 <nav class="pagination">
 <ol>
     {% if pagination.has_prev: %}
@@ -24,23 +22,41 @@
     {% endif %}
 </ol>
 </nav>
+{%- endmacro %}
 
-<table>
+{% block content %}
+{{ render_pagination() }}
+
+<table id="postcards">
 <thead>
 <tr>
-    <th>delete</th>
-    <th>publish</th>
+    <th>front</th>
+    <th>back</th>
     <th>country</th>
     <th>date</th>
     <th>sender</th>
-    <th>front</th>
-    <th>back</th>
     <th>tags</th>
+    <th>delete</th>
+    <th>publish</th>
 </tr>
 </thead>
 <tbody>
 {% for postcard in postcards: %}
 <tr>
+    {% if postcard.front %}
+    <td><a class="thumbnail" href="{{ url_base }}{{ postcard.front }}"><img src="{{ url_base }}{{ postcard.front_thumb or DEFAULT_THUMB }}"></a></td>
+    {% else %}
+    <td></td>
+    {% endif %}
+    {% if postcard.back %}
+    <td><a class="thumbnail" href="{{ url_base }}{{ postcard.back }}"><img src="{{ url_base }}{{ postcard.back_thumb or DEFAULT_THUMB }}"></a></td>
+    {% else %}
+    <td></td>
+    {% endif %}
+    <td>{{ postcard.country }}</td>
+    <td>{{ postcard.date.strftime('%Y-%m-%d') }}</td>
+    <td><a href="http://www.reddit.com/user/{{ postcard.user }}">{{ postcard.user }}</a></td>
+    <td>{{ ', '.join(postcard._tags) }}</td>
     {% if postcard.published and postcard.submission: %}
     <td class="status-published" colspan="2"><a href="http://www.reddit.com{{ postcard.submission }}">Published</a></td>
     {% elif postcard.published: %}
@@ -59,22 +75,11 @@
         </form>
     </td>
     {% endif %}
-    <td>{{ postcard.country }}</td>
-    <td>{{ postcard.date.strftime('%Y-%m-%d') }}</td>
-    <td><a href="http://www.reddit.com/user/{{ postcard.user }}">{{ postcard.user }}</a></td>
-    {% if postcard.front %}
-    <td><a class="thumbnail" href="{{ url_base }}{{ postcard.front }}"><img src="{{ url_base }}{{ postcard.front_thumb or DEFAULT_THUMB }}"></a></td>
-    {% else %}
-    <td></td>
-    {% endif %}
-    {% if postcard.back %}
-    <td><a class="thumbnail" href="{{ url_base }}{{ postcard.back }}"><img src="{{ url_base }}{{ postcard.back_thumb or DEFAULT_THUMB }}"></a></td>
-    {% else %}
-    <td></td>
-    {% endif %}
-    <td>{{ ', '.join(postcard._tags) }}</td>
 </tr>
 {% endfor %}
 </tbody>
 </table>
+
+{{ render_pagination() }}
+
 {% endblock %}

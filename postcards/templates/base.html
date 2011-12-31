@@ -6,6 +6,20 @@
     <link rel="stylesheet" href="/static/postcards.css" type="text/css">
 </head>
 <body>
+    <header>
+    <h1><a href="/">postcards!</a></h1>
+    </header>
+
+    <nav class="site">
+    <ol>
+        {% for endpoint, name in site_nav: %}
+        <li class="{{ "current" if endpoint == request.endpoint }}">
+            <a href="{{ url_for('.' + endpoint) }}">{{ name }}</a>
+        </li>
+        {% endfor %}
+    </ol>
+    </nav>
+
     {% with messages = get_flashed_messages() %}
         {% if messages %}
         <ul class="flashes">
