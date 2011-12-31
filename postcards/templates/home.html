@@ -7,6 +7,7 @@
 <thead>
 <tr>
     <th>delete</th>
+    <th>publish</th>
     <th>country</th>
     <th>date</th>
     <th>sender</th>
@@ -18,12 +19,22 @@
 <tbody>
 {% for postcard in postcards: %}
 <tr>
+    {% if postcard.published: %}
+    <td class="status-published" colspan="2">Published</td>
+    {% else: %}
     <td>
         <form method="POST" action="{{ url_for('.delete') }}">
             <input type="hidden" name="postcard-id" value="{{ postcard.id }}">
             <input type="submit" value="delete">
         </form>
     </td>
+    <td>
+        <form method="POST" action="{{ url_for('.publish') }}">
+            <input type="hidden" name="postcard-id" value="{{ postcard.id }}">
+            <input type="submit" value="publish">
+        </form>
+    </td>
+    {% endif %}
     <td>{{ postcard.country }}</td>
     <td>{{ postcard.date.strftime('%Y-%m-%d') }}</td>
     <td><a href="http://www.reddit.com/user/{{ postcard.user }}">{{ postcard.user }}</a></td>

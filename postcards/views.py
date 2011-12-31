@@ -1,7 +1,7 @@
 import base64
 import datetime
 
-from flask import render_template, redirect, request, flash
+from flask import render_template, redirect, request, flash, abort
 from flaskext import wtf
 
 from postcards import app
@@ -97,6 +97,20 @@ def upload():
 def delete():
     id = int(request.form['postcard-id'])
     postcard = Postcard._byID(id)
+    if postcard.deleted or postcard.published:
+        abort(403)
     postcard.deleted = True
     db.session.commit()
+    flash('postcard deleted!')
+    return redirect('/')
+
+@app.route('/postcard/publish', methods=['POST'])
+def publish():
+    id = int(request.form['postcard-id'])
+    postcard = Postcard._byID(id)
+    if postcard.deleted or postcard.published:
+        abort(403)
+    postcard.published = True
+    db.session.commit()
+    flash('postcard published!')
     return redirect('/')

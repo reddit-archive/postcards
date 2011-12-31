@@ -19,6 +19,7 @@ class Postcard(db.Model):
     front_thumb = db.Column(db.String)
     back_thumb = db.Column(db.String)
     deleted = db.Column(db.Boolean)
+    published = db.Column(db.Boolean)
     tags = db.relationship("Tag")
 
     @staticmethod

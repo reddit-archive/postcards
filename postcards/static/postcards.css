@@ -23,3 +23,9 @@ a.thumbnail {
     width: 70px;
     display: inline-block;
 }
+
+.status-published {
+    font-size: small;
+    text-transform: uppercase;
+    text-align: center;
+}
