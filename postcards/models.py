@@ -27,3 +27,10 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     postcard_id = db.Column(db.Integer, db.ForeignKey('postcards.id'))
     tag = db.Column(db.String)
+
+
+class QueuedJob(db.Model):
+    __tablename__ = 'queue'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    handler = db.Column(db.String, nullable=False)
+    data = db.Column(db.String, nullable=False)

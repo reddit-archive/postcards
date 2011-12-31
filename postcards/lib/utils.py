@@ -5,6 +5,7 @@ import urllib
 import hashlib
 import cStringIO
 
+from postcards.lib.queue import processed_asynchronously
 
 s3 = boto.connect_s3()
 BUCKET_NAME = 'postcards.reddit.com'
