@@ -32,17 +32,16 @@ class PostcardForm(wtf.Form):
 
 @app.route('/')
 def home():
-    #top_tags = (db.session.query(Tag)
-                    #.filter(Tag.tag != '')
-                    #.group_by(Tag.tag)
-                    #.order_by(db.desc(db.func.count(Tag.tag)))
-                    #.limit(10))
+    page_number = int(request.args.get('page', 1))
+    pagination = (Postcard.query.filter(Postcard.deleted == False)
+                                .order_by(db.desc(Postcard.date))
+                                .paginate(page_number, per_page=25))
 
     postcards = {}
-    for postcard in db.session.query(Postcard).filter(Postcard.deleted == False).order_by(db.desc(Postcard.date)):
+    for postcard in pagination.items:
         postcards[postcard.id] = postcard
 
-    for tag in db.session.query(Tag):
+    for tag in Tag.query:
         if tag.postcard_id not in postcards:
             continue
         postcard = postcards[tag.postcard_id]
@@ -54,7 +53,8 @@ def home():
         'home.html',
         postcards=postcards.values(),
         url_base='http://' + app.config['S3_BUCKET'] + '.s3.amazonaws.com/',
-        DEFAULT_THUMB='noimage.png'
+        DEFAULT_THUMB='noimage.png',
+        pagination=pagination,
     )
 
 

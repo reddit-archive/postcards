@@ -29,3 +29,40 @@ a.thumbnail {
     text-transform: uppercase;
     text-align: center;
 }
+
+nav.pagination {
+}
+
+nav.pagination ol {
+    padding: 0;
+}
+
+nav.pagination li {
+    display: inline-block;
+}
+
+nav.pagination li a,
+nav.pagination li.current {
+    display: inline-block;
+    width: 2em;
+    text-align: center;
+    text-decoration: none;
+    border: 2px solid #666;
+    color: white;
+    background: #666;
+}
+
+nav.pagination li a:hover {
+    border-color: #999;
+    background: #999;
+}
+
+nav.pagination li.current {
+    font-weight: bold;
+    background: black;
+    border: 2px solid black;
+}
+
+nav.pagination li.ellipsis {
+    line-height: 0;
+}
