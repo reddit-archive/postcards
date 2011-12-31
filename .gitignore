@@ -2,3 +2,4 @@ postcards.db
 *.pyc
 .*.swo
 .*.swp
+*.cfg

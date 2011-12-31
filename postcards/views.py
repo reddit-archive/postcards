@@ -6,7 +6,7 @@ from flaskext import wtf
 
 from postcards import app
 from postcards.models import db, Postcard, Tag
-from postcards.lib.utils import BUCKET_NAME, upload_to_s3, generate_thumbnails
+from postcards.lib.utils import upload_to_s3, generate_thumbnails
 
 
 class PostcardForm(wtf.Form):
@@ -53,7 +53,7 @@ def home():
     return render_template(
         'home.html',
         postcards=postcards.values(),
-        url_base='http://' + BUCKET_NAME + '.s3.amazonaws.com/',
+        url_base='http://' + app.config['S3_BUCKET'] + '.s3.amazonaws.com/',
         DEFAULT_THUMB='noimage.png'
     )
 

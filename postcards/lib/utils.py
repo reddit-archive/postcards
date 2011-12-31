@@ -5,12 +5,12 @@ import urllib
 import hashlib
 import cStringIO
 
+from postcards import app
 from postcards.models import Postcard
 from postcards.lib.queue import processed_asynchronously
 
 s3 = boto.connect_s3()
-BUCKET_NAME = 'postcards.redditstatic.com'
-bucket = s3.get_bucket(BUCKET_NAME)
+bucket = s3.get_bucket(app.config['S3_BUCKET'])
 
 
 def upload_to_s3(data, content_type='image/jpeg'):
@@ -26,7 +26,7 @@ def upload_to_s3(data, content_type='image/jpeg'):
     return filename
 
 def make_smaller_version_of_image(name, dimensions=(70,70)):
-    url = 'http://' + BUCKET_NAME + '.s3.amazonaws.com/' + name
+    url = 'http://' + app.config['S3_BUCKET'] + '.s3.amazonaws.com/' + name
     image_bytes = urllib.urlopen(url).read()
     image_file = cStringIO.StringIO(image_bytes)
     image = Image.open(image_file)
