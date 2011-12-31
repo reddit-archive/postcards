@@ -28,12 +28,12 @@
     <td>{{ postcard.date.strftime('%Y-%m-%d') }}</td>
     <td><a href="http://www.reddit.com/user/{{ postcard.user }}">{{ postcard.user }}</a></td>
     {% if postcard.front %}
-    <td><a class="thumbnail" href="{{ url_base }}{{ postcard.front }}"><img src="{{ url_base }}{{ postcard.front_thumb }}"></a></td>
+    <td><a class="thumbnail" href="{{ url_base }}{{ postcard.front }}"><img src="{{ url_base }}{{ postcard.front_thumb or DEFAULT_THUMB }}"></a></td>
     {% else %}
     <td></td>
     {% endif %}
     {% if postcard.back %}
-    <td><a class="thumbnail" href="{{ url_base }}{{ postcard.back }}"><img src="{{ url_base }}{{ postcard.back_thumb }}"></a></td>
+    <td><a class="thumbnail" href="{{ url_base }}{{ postcard.back }}"><img src="{{ url_base }}{{ postcard.back_thumb or DEFAULT_THUMB }}"></a></td>
     {% else %}
     <td></td>
     {% endif %}

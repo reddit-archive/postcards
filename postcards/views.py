@@ -53,7 +53,8 @@ def home():
     return render_template(
         'home.html',
         postcards=postcards.values(),
-        url_base='http://' + BUCKET_NAME + '.s3.amazonaws.com/'
+        url_base='http://' + BUCKET_NAME + '.s3.amazonaws.com/',
+        DEFAULT_THUMB='noimage.png'
     )
 
 
