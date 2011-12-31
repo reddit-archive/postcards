@@ -5,10 +5,11 @@ import urllib
 import hashlib
 import cStringIO
 
+from postcards.models import Postcard
 from postcards.lib.queue import processed_asynchronously
 
 s3 = boto.connect_s3()
-BUCKET_NAME = 'postcards.reddit.com'
+BUCKET_NAME = 'postcards.redditstatic.com'
 bucket = s3.get_bucket(BUCKET_NAME)
 
 
@@ -24,12 +25,24 @@ def upload_to_s3(data, content_type='image/jpeg'):
     )
     return filename
 
-def thumbnail_image(name):
+def make_smaller_version_of_image(name, dimensions=(70,70)):
     url = 'http://' + BUCKET_NAME + '.s3.amazonaws.com/' + name
     image_bytes = urllib.urlopen(url).read()
     image_file = cStringIO.StringIO(image_bytes)
     image = Image.open(image_file)
-    image.thumbnail((70, 70), Image.ANTIALIAS)
+    image.thumbnail(dimensions, Image.ANTIALIAS)
     output_file = cStringIO.StringIO()
     image.save(output_file, 'jpeg')
-    return upload_to_s3(output_file.getvalue())
+    return upload_to_s3(output_file.getvalue()), image.size
+
+@processed_asynchronously
+def generate_thumbnails(postcard_id, width=70, height=70):
+    postcard = Postcard._byID(postcard_id)
+
+    if postcard.front:
+        postcard.front_thumb, _ = make_smaller_version_of_image(postcard.front)
+
+    if postcard.back:
+        postcard.back_thumb, _ = make_smaller_version_of_image(postcard.back)
+
+    postcard._commit()

@@ -6,7 +6,7 @@ from flaskext import wtf
 
 from postcards import app
 from postcards.models import db, Postcard, Tag
-from postcards.lib.utils import BUCKET_NAME, upload_to_s3, thumbnail_image
+from postcards.lib.utils import BUCKET_NAME, upload_to_s3, generate_thumbnails
 
 
 class PostcardForm(wtf.Form):
@@ -68,11 +68,7 @@ def new_postcard_form():
         postcard.latitude = form.origin_latitude.data
         postcard.longitude = form.origin_longitude.data
         postcard.front = form.front.data
-        if postcard.front:
-            postcard.front_thumb = thumbnail_image(postcard.front)
         postcard.back = form.back.data
-        if postcard.back:
-            postcard.back_thumb = thumbnail_image(postcard.back)
         postcard.deleted = False
         db.session.add(postcard)
 
@@ -82,6 +78,8 @@ def new_postcard_form():
             postcard.tags.append(t)
 
         db.session.commit()
+
+        generate_thumbnails(postcard.id)
 
         flash('postcard added!')
         return redirect('/postcard/new')
@@ -97,7 +95,7 @@ def upload():
 @app.route('/postcard/delete', methods=['POST', 'DELETE'])
 def delete():
     id = int(request.form['postcard-id'])
-    postcard = db.session.query(Postcard).filter_by(id=id).one()
+    postcard = Postcard._byID(id)
     postcard.deleted = True
     db.session.commit()
     return redirect('/')

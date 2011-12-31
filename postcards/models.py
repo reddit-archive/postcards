@@ -21,6 +21,12 @@ class Postcard(db.Model):
     deleted = db.Column(db.Boolean)
     tags = db.relationship("Tag")
 
+    @staticmethod
+    def _byID(id):
+        return db.session.query(Postcard).filter_by(id=id).one()
+
+    def _commit(self):
+        db.session.commit()
 
 class Tag(db.Model):
     __tablename__ = 'tags'
