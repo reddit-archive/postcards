@@ -38,15 +38,15 @@ def make_smaller_version_of_image(name, dimensions=(70,70)):
     image.save(output_file, 'jpeg')
     return upload_to_s3(output_file.getvalue()), image.size
 
-def run_reddit_script(script, command):
+def run_reddit_script(command, arguments):
     return subprocess.check_output([
         'paster',
         '--plugin=r2',
         'run',
         app.config['REDDIT_CONFIG'],
-        script,
+        command + '.py',
         '-c',
-        command
+        command + '(' + ','.join(repr(x) for x in arguments) + ')'
     ])
 
 
@@ -67,12 +67,8 @@ def submit_link_to_postcard(postcard_id):
             postcard_url,
             s3_url_from_filename(thumbnail)]
 
-    postcard.submission = run_reddit_script(
-        'submit_link.py',
-        'submit_link(' + ','.join(repr(x) for x in args) + ')'
-    )
+    postcard.submission = run_reddit_script('submit_link', args)
     postcard._commit()
-
 
 @processed_asynchronously
 def generate_thumbnails(postcard_id, width=70, height=70):
@@ -85,3 +81,11 @@ def generate_thumbnails(postcard_id, width=70, height=70):
         postcard.back_thumb, _ = make_smaller_version_of_image(postcard.back)
 
     postcard._commit()
+
+
+@processed_asynchronously
+def send_gold_claim_message(postcard_id):
+    postcard = Postcard._byID(postcard_id)
+    assert postcard.submission
+
+    run_reddit_script('send_claim_message', [postcard.user, postcard.submission])
