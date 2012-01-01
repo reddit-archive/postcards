@@ -89,3 +89,10 @@ def send_gold_claim_message(postcard_id):
     assert postcard.submission
 
     run_reddit_script('send_claim_message', [postcard.user, postcard.submission])
+
+
+@processed_asynchronously
+def enflair_user(username):
+    run_reddit_script('enflair', [app.config['REDDIT_SUBREDDIT'],
+                                  username,
+                                  "", "postcard-sender"])
