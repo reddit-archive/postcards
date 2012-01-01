@@ -6,7 +6,7 @@ from flaskext import wtf
 
 from postcards import app
 from postcards.models import db, Postcard, Tag
-from postcards.lib.utils import upload_to_s3, generate_thumbnails, submit_link_to_postcard, \
+from postcards.lib.utils import upload_image_to_s3, generate_thumbnails, submit_link_to_postcard, \
                                 send_gold_claim_message, enflair_user
 
 
@@ -43,7 +43,7 @@ def add_site_nav():
 def home():
     page_number = int(request.args.get('page', 1))
     pagination = (Postcard.query.filter(Postcard.deleted == False)
-                                .order_by(db.desc(Postcard.date))
+                                .order_by(db.desc(Postcard.id))
                                 .paginate(page_number, per_page=25))
 
     postcards = {}
@@ -99,7 +99,7 @@ def new_postcard_form():
 @app.route('/upload', methods=['POST'])
 def upload():
     data = base64.b64decode(request.data)
-    return upload_to_s3(data)
+    return upload_image_to_s3(data)
 
 
 @app.route('/postcard/delete', methods=['POST', 'DELETE'])

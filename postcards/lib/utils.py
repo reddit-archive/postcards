@@ -16,9 +16,7 @@ bucket = s3.get_bucket(app.config['S3_BUCKET'])
 def s3_url_from_filename(filename):
     return 'http://' + app.config['S3_BUCKET'] + '.s3.amazonaws.com/' + filename
 
-def upload_to_s3(data, content_type='image/jpeg'):
-    digest = hashlib.sha1(data).digest()
-    filename = base64.urlsafe_b64encode(digest[:8]).rstrip('=') + '.jpg'
+def upload_to_s3(filename, data, content_type):
     key = bucket.new_key(filename)
     key.set_contents_from_string(
         data,
@@ -26,6 +24,13 @@ def upload_to_s3(data, content_type='image/jpeg'):
         policy='public-read',
         replace=True,
     )
+
+def upload_image_to_s3(bytes):
+    digest = hashlib.sha1(bytes).digest()
+    filename = base64.urlsafe_b64encode(digest[:8]).rstrip('=') + '.jpg'
+
+    upload_to_s3(filename, bytes, 'image/jpeg')
+
     return filename
 
 def make_smaller_version_of_image(name, dimensions=(70,70)):
@@ -36,7 +41,8 @@ def make_smaller_version_of_image(name, dimensions=(70,70)):
     image.thumbnail(dimensions, Image.ANTIALIAS)
     output_file = cStringIO.StringIO()
     image.save(output_file, 'jpeg')
-    return upload_to_s3(output_file.getvalue()), image.size
+    filename = upload_image_to_s3(output_file.getvalue())
+    return filename, image.size
 
 def run_reddit_script(command, arguments):
     return subprocess.check_output([
