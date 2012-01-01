@@ -7,7 +7,7 @@ from flaskext import wtf
 from postcards import app
 from postcards.models import db, Postcard, Tag
 from postcards.lib.utils import upload_image_to_s3, generate_thumbnails, submit_link_to_postcard, \
-                                send_gold_claim_message, enflair_user
+                                send_gold_claim_message, enflair_user, generate_json
 
 
 class PostcardForm(wtf.Form):
@@ -122,6 +122,7 @@ def publish():
     postcard.published = True
     db.session.commit()
 
+    generate_json()
     submit_link_to_postcard(postcard.id)
     send_gold_claim_message(postcard.id)
     enflair_user(postcard.user)

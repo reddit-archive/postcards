@@ -1,4 +1,5 @@
 import boto
+import json
 import Image
 import base64
 import urllib
@@ -7,7 +8,7 @@ import cStringIO
 import subprocess
 
 from postcards import app
-from postcards.models import Postcard
+from postcards.models import db, Postcard
 from postcards.lib.queue import processed_asynchronously
 
 s3 = boto.connect_s3()
@@ -102,3 +103,47 @@ def enflair_user(username):
     run_reddit_script('enflair', [app.config['REDDIT_SUBREDDIT'],
                                   username,
                                   "", "postcard-sender"])
+
+@processed_asynchronously
+def generate_json():
+    data = {}
+    dimensions = dict(small=(215, 215),
+                      full=(800, 800))
+
+    # build the json data and make sure the images are in place
+    query = Postcard.query.filter_by(published=True, deleted=False)
+    for postcard in query:
+        # generate the images if necessary
+        if not postcard.json_image_info:
+            image_info = {}
+            for side in ('front', 'back'):
+                full_image_url = getattr(postcard, side)
+                if not full_image_url:
+                    continue
+
+                image_info[side] = {}
+                for size in ('small', 'full'):
+                    img_data = make_smaller_version_of_image(full_image_url,
+                                                             dimensions[size])
+                    filename, (width, height) = img_data
+                    image_info[side][size] = dict(filename=filename,
+                                                  width=width,
+                                                  height=height)
+
+            postcard.json_image_info = json.dumps(image_info)
+        else:
+            image_info = json.loads(postcard.json_image_info)
+
+        # add data to json_data
+        data[postcard.id] = dict(date=str(postcard.date),
+                                 country=postcard.country,
+                                 latitude=str(postcard.latitude),
+                                 longitude=str(postcard.longitude),
+                                 images=image_info)
+
+    # commit any changes
+    db.session.commit()
+
+    # upload the json'd data to s3
+    json_data = json.dumps(data)
+    upload_to_s3('postcards.json', json_data, 'application/json')

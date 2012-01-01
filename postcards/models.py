@@ -21,6 +21,7 @@ class Postcard(db.Model):
     deleted = db.Column(db.Boolean)
     published = db.Column(db.Boolean)
     submission = db.Column(db.String)
+    json_image_info = db.Column(db.String)
     tags = db.relationship("Tag")
 
     @staticmethod
