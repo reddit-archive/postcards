@@ -1,4 +1,5 @@
 import json
+import traceback
 
 import sqlalchemy
 
@@ -30,13 +31,20 @@ def _handle_queued_job(job):
 
 
 def handle_queued_jobs():
+    last_id = 0
+
     while True:
         try:
-            job = db.session.query(QueuedJob).order_by(db.asc(QueuedJob.id)).limit(1).one()
+            job = QueuedJob.query.filter(QueuedJob.id > last_id).order_by(db.asc(QueuedJob.id)).limit(1).one()
         except sqlalchemy.orm.exc.NoResultFound:
             break
 
-        _handle_queued_job(job)
+        try:
+            _handle_queued_job(job)
+        except Exception:
+            traceback.print_exc()
+        else:
+            db.session.delete(job)
+            db.session.commit()
 
-        db.session.delete(job)
-        db.session.commit()
+        last_id = job.id
