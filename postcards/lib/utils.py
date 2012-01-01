@@ -44,7 +44,7 @@ def run_reddit_script(command, arguments):
         '--plugin=r2',
         'run',
         app.config['REDDIT_CONFIG'],
-        command + '.py',
+        'scripts/' + command + '.py',
         '-c',
         command + '(' + ','.join(repr(x) for x in arguments) + ')'
     ])
