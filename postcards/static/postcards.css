@@ -19,12 +19,12 @@ ul.flashes {
     border: 2px solid #9c9;
 }
 
-table {
-    border-collapse: collapse;
-}
-
 th {
     text-align: left;
+}
+
+#postcards th, #postcards td {
+    text-align: center;
 }
 
 th, td {
@@ -34,6 +34,7 @@ th, td {
 
 #postcards {
     width: 100%;
+    border-collapse: collapse;
 }
 
 #postcards th {
@@ -57,7 +58,6 @@ a.thumbnail {
 .status-published {
     font-size: small;
     text-transform: uppercase;
-    text-align: center;
 }
 
 nav.site {
@@ -129,4 +129,12 @@ nav.pagination li.current {
 
 nav.pagination li.ellipsis {
     line-height: 0;
+}
+
+#postcard-form {
+    margin: 1em 0;
+}
+
+#postcard-form tfoot td {
+    padding-top: 1em;
 }
