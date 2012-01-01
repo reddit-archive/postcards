@@ -62,15 +62,15 @@
     <td class="status-published" colspan="2">Publishing&hellip;</td>
     {% else: %}
     <td>
-        <form method="POST" action="{{ url_for('.delete') }}">
-            <input type="hidden" name="postcard-id" value="{{ postcard.id }}">
-            <input type="submit" value="delete">
-        </form>
-    </td>
-    <td>
         <form method="POST" action="{{ url_for('.publish') }}">
             <input type="hidden" name="postcard-id" value="{{ postcard.id }}">
             <input type="submit" value="publish">
+        </form>
+    </td>
+    <td>
+        <form method="POST" action="{{ url_for('.delete') }}">
+            <input type="hidden" name="postcard-id" value="{{ postcard.id }}">
+            <input type="submit" value="delete">
         </form>
     </td>
     {% endif %}
