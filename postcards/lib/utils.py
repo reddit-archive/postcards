@@ -1,4 +1,3 @@
-import boto
 import json
 import Image
 import base64
@@ -6,12 +5,13 @@ import urllib
 import hashlib
 import cStringIO
 import subprocess
+from boto.s3.connection import S3Connection
 
 from postcards import app
 from postcards.models import db, Postcard
 from postcards.lib.queue import processed_asynchronously
 
-s3 = boto.connect_s3()
+s3 = S3Connection(app.config['S3_ACCESS_KEY'], app.config['S3_SECRET_KEY'])
 bucket = s3.get_bucket(app.config['S3_BUCKET'])
 
 def s3_url_from_filename(filename):
