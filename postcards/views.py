@@ -43,24 +43,13 @@ def add_site_nav():
 def home():
     page_number = int(request.args.get('page', 1))
     pagination = (Postcard.query.filter(Postcard.deleted == False)
+                                .options(db.subqueryload('tags'))
                                 .order_by(db.desc(Postcard.date))
                                 .paginate(page_number, per_page=25))
 
-    postcards = {}
-    for postcard in pagination.items:
-        postcards[postcard.id] = postcard
-
-    for tag in Tag.query:
-        if tag.postcard_id not in postcards:
-            continue
-        postcard = postcards[tag.postcard_id]
-        if not hasattr(postcard, '_tags'):
-            postcard._tags = []
-        postcard._tags.append(tag.tag)
-
     return render_template(
         'home.html',
-        postcards=postcards.values(),
+        postcards=pagination.items,
         url_base='http://' + app.config['S3_BUCKET'] + '.s3.amazonaws.com/',
         DEFAULT_THUMB='noimage.png',
         pagination=pagination,

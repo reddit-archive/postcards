@@ -55,7 +55,7 @@
     <td>{{ postcard.country }}</td>
     <td>{{ postcard.date.strftime('%Y-%m-%d') }}</td>
     <td><a href="http://www.reddit.com/user/{{ postcard.user }}">{{ postcard.user }}</a></td>
-    <td>{{ ', '.join(postcard._tags) }}</td>
+    <td>{{ ', '.join(postcard.text_tags) }}</td>
     {% if postcard.published and postcard.submission: %}
     <td class="status-published" colspan="2"><a href="http://www.reddit.com{{ postcard.submission }}">Published</a></td>
     {% elif postcard.published: %}

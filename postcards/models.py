@@ -31,6 +31,10 @@ class Postcard(db.Model):
     def _commit(self):
         db.session.commit()
 
+    @property
+    def text_tags(self):
+        return (tag.tag for tag in self.tags)
+
 class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
