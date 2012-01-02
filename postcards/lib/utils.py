@@ -105,8 +105,8 @@ def enflair_user(username):
                                   "", "postcard-sender"])
 
 @processed_asynchronously
-def generate_json():
-    data = {}
+def generate_jsonp():
+    data = []
     dimensions = dict(small=(215, 215),
                       full=(800, 800))
 
@@ -135,15 +135,16 @@ def generate_json():
             image_info = json.loads(postcard.json_image_info)
 
         # add data to json_data
-        data[postcard.id] = dict(date=str(postcard.date),
-                                 country=postcard.country,
-                                 latitude=str(postcard.latitude),
-                                 longitude=str(postcard.longitude),
-                                 images=image_info)
+        data.append(dict(id=postcard.id,
+                         date=str(postcard.date),
+                         country=postcard.country,
+                         latitude=str(postcard.latitude),
+                         longitude=str(postcard.longitude),
+                         images=image_info))
 
     # commit any changes
     db.session.commit()
 
-    # upload the json'd data to s3
-    json_data = json.dumps(data)
-    upload_to_s3('postcards.json', json_data, 'application/json')
+    # upload the jsonp'd data to s3
+    json_data = "postcards(" + json.dumps(data) + ")"
+    upload_to_s3('postcards.js', json_data, 'application/javascript')
