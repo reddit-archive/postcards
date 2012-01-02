@@ -116,17 +116,19 @@ def generate_jsonp():
         # generate the images if necessary
         if not postcard.json_image_info:
             image_info = {}
-            for side in ('front', 'back'):
-                full_image_url = getattr(postcard, side)
-                if not full_image_url:
-                    continue
 
-                image_info[side] = {}
-                for size in ('small', 'full'):
+            for size in ('small', 'full'):
+                image_info[size] = {}
+
+                for side in ('front', 'back'):
+                    full_image_url = getattr(postcard, side)
+                    if not full_image_url:
+                        continue
+
                     img_data = make_smaller_version_of_image(full_image_url,
                                                              dimensions[size])
                     filename, (width, height) = img_data
-                    image_info[side][size] = dict(filename=filename,
+                    image_info[size][side] = dict(filename=filename,
                                                   width=width,
                                                   height=height)
 
