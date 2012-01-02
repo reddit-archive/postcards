@@ -43,7 +43,7 @@ def add_site_nav():
 def home():
     page_number = int(request.args.get('page', 1))
     pagination = (Postcard.query.filter(Postcard.deleted == False)
-                                .order_by(db.desc(Postcard.id))
+                                .order_by(db.desc(Postcard.date))
                                 .paginate(page_number, per_page=25))
 
     postcards = {}
