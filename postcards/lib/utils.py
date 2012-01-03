@@ -148,5 +148,5 @@ def generate_jsonp():
     db.session.commit()
 
     # upload the jsonp'd data to s3
-    json_data = "postcards(" + json.dumps(data) + ")"
+    json_data = "postcardsCallback(" + json.dumps(data) + ")"
     upload_to_s3('postcards.js', json_data, 'application/javascript')
