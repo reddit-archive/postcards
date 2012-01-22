@@ -22,7 +22,7 @@ class PostcardForm(wtf.Form):
     origin = wtf.TextField('origin', validators=[wtf.Required()])
     date = wtf.DateField('date of postmark',
                          format='%m/%d/%Y',
-                         default=datetime.date(2010, 01, 01))
+                         default=datetime.date.today())
     origin_country = wtf.HiddenField()
     origin_latitude = wtf.DecimalField()
     origin_longitude = wtf.DecimalField()
