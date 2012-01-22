@@ -3,6 +3,8 @@ import Image
 import base64
 import urllib
 import hashlib
+import datetime
+import pycountry
 import cStringIO
 import subprocess
 from boto.s3.connection import S3Connection
@@ -13,6 +15,7 @@ from postcards.lib.queue import processed_asynchronously
 
 s3 = S3Connection(app.config['S3_ACCESS_KEY'], app.config['S3_SECRET_KEY'])
 bucket = s3.get_bucket(app.config['S3_BUCKET'], validate=False)
+DEFAULT_DATE = datetime.date(2010, 01, 01)
 
 def s3_url_from_filename(filename):
     return 'http://' + app.config['S3_BUCKET'] + '.s3.amazonaws.com/' + filename
@@ -61,7 +64,11 @@ def run_reddit_script(command, arguments):
 def submit_link_to_postcard(postcard_id):
     postcard = Postcard._byID(postcard_id)
 
-    title = "[Postcard] sent in from %s" % postcard.country
+    country = pycountry.countries.get(alpha2=postcard.country)
+    title_components = ["[Postcard] sent in from", country.name]
+    if postcard.date != DEFAULT_DATE:
+        title_components += ["on", postcard.date.strftime('%d-%b-%Y')]
+    title = " ".join(title_components)
 
     postcard_url = 'http://www.reddit.com/about/postcards/%d' % postcard.id
 
