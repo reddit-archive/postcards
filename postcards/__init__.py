@@ -1,6 +1,10 @@
 import os
+import logging
 
 from flask import Flask
+
+logging.basicConfig()
+logging.getLogger('pycountry.db').setLevel(logging.CRITICAL)
 
 app = Flask(__name__)
 app.config.from_envvar('POSTCARD_SETTINGS')
