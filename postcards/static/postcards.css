@@ -69,35 +69,35 @@ nav.site {
 }
 
 nav.site ol {
-    margin: 0;
+    margin: 0 0 -2px 0;
     padding: 0;
 }
 
 nav.site li {
     display: inline-block;
     margin: 0 0 0 .3em;
+    padding: .1em .1em 0 .1em;
+    border: 2px solid black;
+    background-color: #ccc;
 }
 
 nav.site li a {
     text-decoration: none;
-    border: 2px solid black;
     padding: .3em .3em 0 .3em;
-    background-color: #ccc;
     color: black;
 }
 
-nav.site li a:hover {
+nav.site li:hover {
     background: #e0e0e0;
 }
 
-nav.site li.current a {
+nav.site li.current {
     color: black;
     background: white;
-    font-weight: bold;
     border-bottom: 2px solid white;
 }
 
-nav.site li.current a:hover {
+nav.site li.current:hover {
     background: white;
 }
 
