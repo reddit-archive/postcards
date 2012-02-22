@@ -1,5 +1,38 @@
 {% extends "base.html" %}
 
+{% block scripts %}
+<script src="/static/lib/jquery-1.6.2.min.js"></script>
+<script src="/static/lib/underscore-min.js"></script>
+<script>
+$(function () {
+    var container = $("#postcardcontainer"),
+        queryForm = $("#q"),
+        lastSearch = ""
+
+    var handler = function() {
+        var query = queryForm.val()
+
+        if (query == lastSearch)
+            return
+
+        var url = "/?" + $.param({
+            "q": query,
+            "count": {{ pagination.per_page }},
+        })
+        container.load(url + " #postcardcontainer")
+
+        lastSearch = query
+    }
+
+    if ("incremental" in document.createElement("input")) {
+        queryForm.bind("search", handler)
+    } else {
+        queryForm.keyup(_.debounce(handler, 500))
+    }
+})
+</script>
+{% endblock %}
+
 {% macro render_pagination() -%}
 <nav class="pagination">
 <ol>
@@ -25,6 +58,20 @@
 {%- endmacro %}
 
 {% block content %}
+
+<form action="/" method="GET">
+<fieldset>
+    <input type="hidden" id="count" value="{{ pagination.per_page }}">
+    <input type="search" id="q" name="q" placeholder="search" incremental
+        {% if search_query %}
+        value="{{ search_query }}"
+        {% endif %}
+        >
+    <input type="submit" value="go">
+</fieldset>
+</form>
+
+<div id="postcardcontainer">
 {{ render_pagination() }}
 
 <table id="postcards">
@@ -40,6 +87,7 @@
 </tr>
 </thead>
 <tbody>
+{% if pagination.total: %}
 {% for postcard in postcards: %}
 <tr>
     {% if postcard.front %}
@@ -76,9 +124,16 @@
     {% endif %}
 </tr>
 {% endfor %}
+{% else %}
+<tr>
+    <td colspan="8" class="empty">there doesn't seem to be anything here</td>
+</tr>
+{% endif %}
 </tbody>
 </table>
 
 {{ render_pagination() }}
+
+</div>
 
 {% endblock %}

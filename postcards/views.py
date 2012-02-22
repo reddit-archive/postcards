@@ -41,11 +41,17 @@ def add_site_nav():
 
 @app.route('/')
 def home():
-    page_number = int(request.args.get('page', 1))
-    pagination = (Postcard.query.filter(Postcard.deleted == False)
+    base_query = (Postcard.query.filter(Postcard.deleted == False)
                                 .options(db.subqueryload('tags'))
-                                .order_by(db.desc(Postcard.date))
-                                .paginate(page_number, per_page=25))
+                                .order_by(db.desc(Postcard.date)))
+
+    search_query = request.args.get('q')
+    if search_query:
+        base_query = base_query.filter(Postcard.user.like("%" + search_query + "%"))
+
+    page_number = int(request.args.get('page', 1))
+    page_size = int(request.args.get('count', 25))
+    pagination = base_query.paginate(page_number, per_page=page_size)
 
     return render_template(
         'home.html',
@@ -53,8 +59,8 @@ def home():
         url_base='http://' + app.config['S3_BUCKET'] + '.s3.amazonaws.com/',
         DEFAULT_THUMB='noimage.png',
         pagination=pagination,
+        search_query=search_query,
     )
-
 
 @app.route('/postcard/new', methods=['GET', 'POST'])
 def new_postcard_form():

@@ -32,6 +32,10 @@ th, td {
     vertical-align: middle;
 }
 
+td.empty {
+    padding: 3em;
+}
+
 #postcards {
     width: 100%;
     border-collapse: collapse;
@@ -99,6 +103,7 @@ nav.site li.current a:hover {
 
 nav.pagination ol {
     padding: 0;
+    min-height: 1.3em;
 }
 
 nav.pagination li {
@@ -137,4 +142,20 @@ nav.pagination li.ellipsis {
 
 #postcard-form tfoot td {
     padding-top: 1em;
+}
+
+#content {
+    position: relative;
+}
+
+fieldset {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border: 0;
+    padding: 0;
+}
+
+fieldset * {
+    margin: 0;
 }
