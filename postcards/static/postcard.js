@@ -8,7 +8,7 @@ $(function() {
             $("#origin").val() == geocodeResult &&
             $("#username").val() != '' &&
             $("#date").val() != '' &&
-            filesUploaded == 1
+            filesUploaded >= 1
         )
 
         if (isValid)
