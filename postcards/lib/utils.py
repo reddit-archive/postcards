@@ -153,21 +153,36 @@ def generate_jsonp():
     db.session.commit()
 
     # write out the chunks
+    all_postcards = []
+    newest_chunk = sorted(chunks.keys(), reverse=True)[0]
     for chunk_id, chunk in chunks.iteritems():
         # generate the images if necessary
         postcards = []
-        data = dict(total_postcard_count=total_postcard_count,
-                    postcards=postcards)
 
         for postcard in chunk:
-            postcards.append(dict(id=postcard.id,
-                             date=str(postcard.date),
-                             country=postcard.country,
-                             latitude=str(postcard.latitude),
-                             longitude=str(postcard.longitude),
-                             images=image_info))
+            data = dict(id=postcard.id,
+                        date=str(postcard.date),
+                        country=postcard.country,
+                        latitude=str(postcard.latitude),
+                        longitude=str(postcard.longitude),
+                        images=image_info)
+            postcards.append(data)
+            all_postcards.append(data)
 
-        json_data = "postcardsCallback%d(%s)" % (chunk_id,
-                                                 json.dumps(data))
+        json_data = json.dumps(data)
         upload_to_s3('postcards%d.js' % chunk_id,
-                     json_data, 'application/javascript')
+                     'postcardCallback%d(%s)' % (chunk_id, json_data),
+                     'application/javascript')
+
+        if chunk_id == newest_chunk:
+            upload_to_s3('postcards-latest.js',
+                         'postcardCallback(%s)' % json_data,
+                         'application/javascript')
+
+
+    data = dict(total_postcard_count=total_postcard_count,
+                postcards=all_postcards)
+    json_data = json.dumps(data)
+    upload_to_s3('postcards-all.js',
+                 'postcardCallback(%s)' % json_data,
+                 'application/javascript')
