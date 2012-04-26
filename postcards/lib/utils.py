@@ -171,6 +171,7 @@ def generate_jsonp():
             all_postcards.append(data)
 
         json_data = json.dumps(dict(total_postcard_count=total_postcard_count,
+                                    chunk_id=chunk_id,
                                     postcards=postcards))
         upload_to_s3('postcards%d.js' % chunk_id,
                      'postcardCallback%d(%s)' % (chunk_id, json_data),
@@ -183,6 +184,7 @@ def generate_jsonp():
 
 
     data = dict(total_postcard_count=total_postcard_count,
+                chunk_id=newest_chunk,
                 postcards=all_postcards)
     json_data = json.dumps(data)
     upload_to_s3('postcards-all.js',
