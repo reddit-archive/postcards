@@ -7,6 +7,7 @@ import datetime
 import pycountry
 import cStringIO
 import subprocess
+import collections
 from boto.s3.connection import S3Connection
 
 from postcards import app
@@ -16,6 +17,7 @@ from postcards.lib.queue import processed_asynchronously
 s3 = S3Connection(app.config['S3_ACCESS_KEY'], app.config['S3_SECRET_KEY'])
 bucket = s3.get_bucket(app.config['S3_BUCKET'], validate=False)
 DEFAULT_DATE = datetime.date(2010, 01, 01)
+CHUNK_SIZE = 28
 
 def s3_url_from_filename(filename):
     return 'http://' + app.config['S3_BUCKET'] + '.s3.amazonaws.com/' + filename
@@ -113,14 +115,14 @@ def enflair_user(username):
 
 @processed_asynchronously
 def generate_jsonp():
-    data = []
     dimensions = dict(small=(215, 215),
                       full=(800, 800))
 
-    # build the json data and make sure the images are in place
+    # group the cards into their chunks and make sure their images are ready
     query = Postcard.query.filter_by(published=True, deleted=False)
+    chunks = collections.defaultdict(list)
+    total_postcard_count = 0
     for postcard in query:
-        # generate the images if necessary
         if not postcard.json_image_info:
             image_info = {}
 
@@ -143,17 +145,29 @@ def generate_jsonp():
         else:
             image_info = json.loads(postcard.json_image_info)
 
-        # add data to json_data
-        data.append(dict(id=postcard.id,
-                         date=str(postcard.date),
-                         country=postcard.country,
-                         latitude=str(postcard.latitude),
-                         longitude=str(postcard.longitude),
-                         images=image_info))
+        chunk = int(postcard.id / CHUNK_SIZE)
+        chunks[chunk].append(postcard)
+        total_postcard_count += 1
 
     # commit any changes
     db.session.commit()
 
-    # upload the jsonp'd data to s3
-    json_data = "postcardsCallback(" + json.dumps(data) + ")"
-    upload_to_s3('postcards.js', json_data, 'application/javascript')
+    # write out the chunks
+    for chunk_id, chunk in chunks.iteritems():
+        # generate the images if necessary
+        postcards = []
+        data = dict(total_postcard_count=total_postcard_count,
+                    postcards=postcards)
+
+        for postcard in chunk:
+            postcards.append(dict(id=postcard.id,
+                             date=str(postcard.date),
+                             country=postcard.country,
+                             latitude=str(postcard.latitude),
+                             longitude=str(postcard.longitude),
+                             images=image_info))
+
+        json_data = "postcardsCallback%d(%s)" % (chunk_id,
+                                                 json.dumps(data))
+        upload_to_s3('postcards%d.js' % chunk_id,
+                     json_data, 'application/javascript')
