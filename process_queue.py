@@ -12,4 +12,4 @@ if len(sys.argv) > 2:
 elif len(sys.argv) == 2:
     filter = sys.argv[1]
 
-handle_queued_jobs()
+handle_queued_jobs(filter)

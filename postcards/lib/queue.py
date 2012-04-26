@@ -36,10 +36,10 @@ def handle_queued_jobs(filter=None):
     while True:
         try:
             query = (QueuedJob.query.filter(QueuedJob.id > last_id)
-                                    .order_by(db.asc(QueuedJob.id))
-                                    .limit(1))
+                                    .order_by(db.asc(QueuedJob.id)))
             if filter:
                 query = query.filter(QueuedJob.handler == filter)
+            query = query.limit(1)
             job = query.one()
         except sqlalchemy.orm.exc.NoResultFound:
             break
