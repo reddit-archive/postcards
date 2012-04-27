@@ -119,9 +119,9 @@ def generate_jsonp():
                       full=(800, 800))
 
     # group the cards into their chunks and make sure their images are ready
-    query = Postcard.query.filter_by(published=True, deleted=False)
+    query = Postcard.query.filter_by(published=True, deleted=False).order_by(db.asc(Postcard.date))
     chunks = collections.defaultdict(list)
-    total_postcard_count = 0
+    all_postcards = []
     for postcard in query:
         if not postcard.json_image_info:
             image_info = {}
@@ -147,13 +147,11 @@ def generate_jsonp():
 
         chunk = int(postcard.id / CHUNK_SIZE)
         chunks[chunk].append(postcard)
-        total_postcard_count += 1
 
     # commit any changes
     db.session.commit()
 
     # write out the chunks
-    all_postcards = []
     newest_chunk = sorted(chunks.keys(), reverse=True)[0]
     for chunk_id, chunk in chunks.iteritems():
         # generate the images if necessary
@@ -170,20 +168,21 @@ def generate_jsonp():
             postcards.append(data)
             all_postcards.append(data)
 
-        json_data = json.dumps(dict(total_postcard_count=total_postcard_count,
+        json_data = json.dumps(dict(total_postcard_count=len(all_postcards),
                                     chunk_id=chunk_id,
                                     postcards=postcards))
         upload_to_s3('postcards%d.js' % chunk_id,
                      'postcardCallback%d(%s)' % (chunk_id, json_data),
                      'application/javascript')
 
-        if chunk_id == newest_chunk:
-            upload_to_s3('postcards-latest.js',
-                         'postcardCallback(%s)' % json_data,
-                         'application/javascript')
+    data = dict(total_postcard_count=len(all_postcards),
+                postcards=all_postcards[-CHUNK_SIZE:])
+    json_data = json.dumps(data)
+    upload_to_s3('postcards-latest.js',
+                 'postcardCallback(%s)' % json_data,
+                 'application/javascript')
 
-
-    data = dict(total_postcard_count=total_postcard_count,
+    data = dict(total_postcard_count=len(all_postcards),
                 chunk_id=newest_chunk,
                 postcards=all_postcards)
     json_data = json.dumps(data)
