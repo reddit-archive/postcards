@@ -126,7 +126,7 @@ def generate_jsonp():
     dimensions = dict(small=(215, 215),
                       full=(800, 800))
 
-    query = Postcard.query.filter_by(published=True, deleted=False).order_by(db.asc(Postcard.date))
+    query = Postcard.query.filter_by(published=True, deleted=False).order_by(db.asc(Postcard.id))
     all_postcards = []
     for postcard in query:
         # make sure the images are in place
