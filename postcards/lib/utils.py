@@ -7,7 +7,6 @@ import datetime
 import pycountry
 import cStringIO
 import subprocess
-import collections
 from boto.s3.connection import S3Connection
 
 from postcards import app
@@ -113,16 +112,24 @@ def enflair_user(username):
                                   username,
                                   "", "postcard-sender"])
 
+
+def chunks(l, n):
+    # http://stackoverflow.com/a/312464/190597
+    """ Yield successive n-sized chunks from l.
+    """
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]
+
+
 @processed_asynchronously
 def generate_jsonp():
     dimensions = dict(small=(215, 215),
                       full=(800, 800))
 
-    # group the cards into their chunks and make sure their images are ready
     query = Postcard.query.filter_by(published=True, deleted=False).order_by(db.asc(Postcard.date))
-    chunks = collections.defaultdict(list)
     all_postcards = []
     for postcard in query:
+        # make sure the images are in place
         if not postcard.json_image_info:
             image_info = {}
 
@@ -145,46 +152,42 @@ def generate_jsonp():
         else:
             image_info = json.loads(postcard.json_image_info)
 
-        chunk = int(postcard.id / CHUNK_SIZE)
-        chunks[chunk].append(postcard)
+        # add the postcard data
+        data = dict(id=postcard.id,
+                    date=str(postcard.date),
+                    country=postcard.country,
+                    latitude=str(postcard.latitude),
+                    longitude=str(postcard.longitude),
+                    images=image_info)
+        all_postcards.append(data)
 
     # commit any changes
     db.session.commit()
 
-    # write out the chunks
-    newest_chunk = sorted(chunks.keys(), reverse=True)[0]
-    for chunk_id, chunk in chunks.iteritems():
-        # generate the images if necessary
-        postcards = []
-
-        for postcard in chunk:
-            image_info = json.loads(postcard.json_image_info)
-            data = dict(id=postcard.id,
-                        date=str(postcard.date),
-                        country=postcard.country,
-                        latitude=str(postcard.latitude),
-                        longitude=str(postcard.longitude),
-                        images=image_info)
-            postcards.append(data)
-            all_postcards.append(data)
-
-        json_data = json.dumps(dict(total_postcard_count=len(all_postcards),
-                                    chunk_id=chunk_id,
-                                    postcards=postcards))
+    # output the chunks
+    index = {}
+    for chunk_id, chunk in enumerate(chunks(all_postcards, CHUNK_SIZE)):
+        json_data = json.dumps(dict(chunk_id=chunk_id,
+                                    postcards=chunk))
         upload_to_s3('postcards%d.js' % chunk_id,
                      'postcardCallback%d(%s)' % (chunk_id, json_data),
                      'application/javascript')
 
+        range = (chunk[0]["id"], chunk[-1]["id"])
+        index[chunk_id] = range
+
+    # file containing latest postcards and an index mapping ids to chunks
     data = dict(total_postcard_count=len(all_postcards),
-                postcards=all_postcards[-CHUNK_SIZE:])
+                chunk_id=chunk_id,
+                index=index,
+                postcards=chunk)
     json_data = json.dumps(data)
     upload_to_s3('postcards-latest.js',
                  'postcardCallback(%s)' % json_data,
                  'application/javascript')
 
-    data = dict(total_postcard_count=len(all_postcards),
-                chunk_id=newest_chunk,
-                postcards=all_postcards)
+    # all the postcards in one file
+    data = dict(postcards=all_postcards)
     json_data = json.dumps(data)
     upload_to_s3('postcards-all.js',
                  'postcardCallback(%s)' % json_data,
