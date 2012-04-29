@@ -178,9 +178,8 @@ def generate_jsonp():
 
     # file containing latest postcards and an index mapping ids to chunks
     data = dict(total_postcard_count=len(all_postcards),
-                chunk_id=chunk_id,
                 index=index,
-                postcards=chunk)
+                postcards=all_postcards[-CHUNK_SIZE:])
     json_data = json.dumps(data)
     upload_to_s3('postcards-latest.js',
                  'postcardCallback(%s)' % json_data,
