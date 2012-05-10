@@ -41,6 +41,10 @@ td.empty {
     border-collapse: collapse;
 }
 
+#postcards form {
+    display: inline;
+}
+
 #postcards th {
     text-transform: uppercase;
 }

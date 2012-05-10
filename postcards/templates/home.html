@@ -33,30 +33,6 @@ $(function () {
 </script>
 {% endblock %}
 
-{% macro render_pagination() -%}
-<nav class="pagination">
-<ol>
-    {% if pagination.has_prev: %}
-    <li class="prev arrow"><a href="{{ url_for(".home", page=pagination.prev_num) }}">&larr;</a></li>
-    {% endif %}
-    {%- for page in pagination.iter_pages(left_edge=1, left_current=2, right_current=3, right_edge=1): %}
-    {% if page: %}
-        {% if page != pagination.page: %}
-        <li><a href="{{ url_for(".home", page=page) }}">{{ page }}</a></li>
-        {% else: %}
-        <li class="current">{{ page }}</li>
-        {% endif %}
-    {% else: %}
-    <li class="ellipsis">&hellip;</li>
-    {% endif %}
-    {%- endfor %}
-    {% if pagination.has_next: %}
-    <li class="next arrow"><a href="{{ url_for(".home", page=pagination.next_num) }}">&rarr;</a></li>
-    {% endif %}
-</ol>
-</nav>
-{%- endmacro %}
-
 {% block content %}
 
 <form action="/" method="GET">
@@ -72,7 +48,7 @@ $(function () {
 </form>
 
 <div id="postcardcontainer">
-{{ render_pagination() }}
+{% include "pagination.html" %}
 
 <table id="postcards">
 <thead>
@@ -88,7 +64,7 @@ $(function () {
 </thead>
 <tbody>
 {% if pagination.total: %}
-{% for postcard in postcards: %}
+{% for postcard in pagination.items: %}
 <tr>
     {% if postcard.front %}
     <td><a class="thumbnail" href="{{ url_base }}{{ postcard.front }}"><img src="{{ url_base }}{{ postcard.front_thumb or DEFAULT_THUMB }}"></a></td>
@@ -110,14 +86,12 @@ $(function () {
     <td class="status-published" colspan="2">Publishing&hellip;</td>
     {% else: %}
     <td>
-        <form method="POST" action="{{ url_for('.publish') }}">
-            <input type="hidden" name="postcard-id" value="{{ postcard.id }}">
+        <form method="POST" action="{{ url_for('.publish', id=postcard.id) }}">
             <input type="submit" value="publish">
         </form>
     </td>
     <td>
-        <form method="POST" action="{{ url_for('.delete') }}">
-            <input type="hidden" name="postcard-id" value="{{ postcard.id }}">
+        <form method="POST" action="{{ url_for('.delete', id=postcard.id) }}">
             <input type="submit" value="delete">
         </form>
     </td>
@@ -132,7 +106,7 @@ $(function () {
 </tbody>
 </table>
 
-{{ render_pagination() }}
+{% include "pagination.html" %}
 
 </div>
 

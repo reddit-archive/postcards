@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block scripts %}
+<script src="/static/lib/jquery-1.6.2.min.js"></script>
+<script>
+$(function () {
+    $("#postcards").delegate(
+        'form',
+        'submit',
+        function (e) {
+            var form = $(this)
+            var row = form.closest('tr')
+            var div = form.closest('div')
+            div.html('<img src="/static/spinner.gif" width="91" height="85">')
+
+            $.ajax({
+                type: 'POST',
+                url: form.attr('action'),
+                success: function (data, textStatus, jqXHR) {
+                    row.fadeOut()
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    div.html('<span class="error">shit, something broke :(</span>')
+                }
+            });
+
+            return false;
+        }
+    );
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div id="postcardcontainer">
+{% include "pagination.html" %}
+
+<table id="postcards">
+<thead>
+<tr>
+    <th>details</th>
+    <th>front</th>
+    <th>back</th>
+</tr>
+</thead>
+<tbody>
+{% if pagination.total: %}
+{% for postcard in pagination.items: %}
+<tr data-id="{{ postcard.id }}">
+    <td>
+        <p><a href="http://www.reddit.com/user/{{ postcard.user }}">/u/{{ postcard.user }}</a></p>
+        <p>from {{ postcard.country }} on {{ postcard.date }}</p>
+
+        <div>
+        <form method="POST" action="{{ url_for('.publish', id=postcard.id) }}">
+            <input type="submit" value="publish">
+        </form>
+        <form method="POST" action="{{ url_for('.delete', id=postcard.id) }}">
+            <input type="submit" value="delete">
+        </form>
+        </div>
+    </td>
+    {% if postcard.front %}
+    <td><a class="thumbnail-large" href="{{ url_base }}{{ postcard.front }}"><img src="{{ url_base }}{{ postcard.front_thumb.get('filename', DEFAULT_THUMB) }}" width="{{ postcard.front_thumb.get('width', DEFAULT_THUMB_WIDTH) }}" height="{{ postcard.front_thumb.get('height', DEFAULT_THUMB_HEIGHT) }}"></a></td>
+    {% else %}
+    <td></td>
+    {% endif %}
+    {% if postcard.back %}
+    <td><a class="thumbnail-large" href="{{ url_base }}{{ postcard.back }}"><img src="{{ url_base }}{{ postcard.back_thumb.get('filename', DEFAULT_THUMB) }}" width="{{ postcard.back_thumb.get('width', DEFAULT_THUMB_WIDTH) }}" height="{{ postcard.back_thumb.get('height', DEFAULT_THUMB_HEIGHT) }}"></a></td>
+    {% else %}
+    <td></td>
+    {% endif %}
+</tr>
+{% endfor %}
+{% else %}
+<tr>
+    <td colspan="8" class="empty">there doesn't seem to be anything here</td>
+</tr>
+{% endif %}
+</tbody>
+</table>
+
+{% include "pagination.html" %}
+</div>
+{% endblock %}

@@ -1,3 +1,4 @@
+import json
 import base64
 import datetime
 
@@ -35,8 +36,16 @@ class PostcardForm(wtf.Form):
 def add_site_nav():
     return dict(site_nav=[
         ("home", "home"),
+        ("unpublished", "unpublished"),
         ("new_postcard_form", "add postcard"),
     ])
+
+
+def build_pagination(base_query):
+    page_number = int(request.args.get('page', 1))
+    page_size = int(request.args.get('count', 25))
+    pagination = base_query.paginate(page_number, per_page=page_size)
+    return pagination
 
 
 @app.route('/')
@@ -49,17 +58,15 @@ def home():
     if search_query:
         base_query = base_query.filter(Postcard.user.like("%" + search_query + "%"))
 
-    page_number = int(request.args.get('page', 1))
-    page_size = int(request.args.get('count', 25))
-    pagination = base_query.paginate(page_number, per_page=page_size)
+    pagination = build_pagination(base_query)
 
     return render_template(
         'home.html',
-        postcards=pagination.items,
         url_base='http://' + app.config['S3_BUCKET'] + '.s3.amazonaws.com/',
         DEFAULT_THUMB='noimage.png',
         pagination=pagination,
         search_query=search_query,
+        current_page=".home",
     )
 
 @app.route('/postcard/new', methods=['GET', 'POST'])
@@ -91,26 +98,58 @@ def new_postcard_form():
     return render_template('postcard_new.html', form=form)
 
 
+@app.route('/unpublished', methods=['GET'])
+def unpublished():
+    base_query = (Postcard.query.filter(Postcard.deleted == False)
+                                .filter(Postcard.published == False)
+                                .options(db.subqueryload('tags'))
+                                .order_by(db.desc(Postcard.date)))
+    pagination = build_pagination(base_query)
+
+    # patch in larger thumbnails
+    for postcard in pagination.items:
+        info = {}
+
+        jsoninfo = getattr(postcard, 'json_image_info')
+        if jsoninfo:
+            info = json.loads(jsoninfo).get('small', {})
+
+        postcard.front_thumb = info.get('front', {})
+        postcard.back_thumb = info.get('back', {})
+
+    return render_template(
+        'unpublished.html',
+        url_base='http://' + app.config['S3_BUCKET'] + '.s3.amazonaws.com/',
+        DEFAULT_THUMB='noimage-large.png',
+        DEFAULT_THUMB_WIDTH=215,
+        DEFAULT_THUMB_HEIGHT=215,
+        pagination=pagination,
+        current_page=".unpublished",
+    )
+
+
 @app.route('/upload', methods=['POST'])
 def upload():
     data = base64.b64decode(request.data)
     return upload_image_to_s3(data)
 
 
-@app.route('/postcard/delete', methods=['POST', 'DELETE'])
-def delete():
-    id = int(request.form['postcard-id'])
+@app.route('/postcard/delete/<int:id>', methods=['POST', 'DELETE'])
+def delete(id):
     postcard = Postcard._byID(id)
     if postcard.deleted or postcard.published:
         abort(403)
     postcard.deleted = True
     db.session.commit()
-    flash('postcard deleted!')
-    return redirect('/')
 
-@app.route('/postcard/publish', methods=['POST'])
-def publish():
-    id = int(request.form['postcard-id'])
+    if request.headers['X-Requested-With'] == 'XMLHttpRequest':
+        return 'success!'
+    else:
+        flash('postcard deleted!')
+        return redirect('/')
+
+@app.route('/postcard/publish/<int:id>', methods=['POST'])
+def publish(id):
     postcard = Postcard._byID(id)
     if postcard.deleted or postcard.published:
         abort(403)
@@ -122,5 +161,8 @@ def publish():
     send_gold_claim_message(postcard.id)
     enflair_user(postcard.user)
 
-    flash('postcard published!')
-    return redirect('/')
+    if request.headers['X-Requested-With'] == 'XMLHttpRequest':
+        return 'success!'
+    else:
+        flash('postcard published!')
+        return redirect('/')
