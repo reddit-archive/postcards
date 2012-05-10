@@ -87,6 +87,9 @@ def submit_link_to_postcard(postcard_id):
 
 @processed_asynchronously
 def generate_thumbnails(postcard_id, width=70, height=70):
+    dimensions = dict(small=(215, 215),
+                      full=(800, 800))
+
     postcard = Postcard._byID(postcard_id)
 
     if postcard.front:
@@ -94,6 +97,23 @@ def generate_thumbnails(postcard_id, width=70, height=70):
 
     if postcard.back:
         postcard.back_thumb, _ = make_smaller_version_of_image(postcard.back)
+
+    image_info = {}
+    for size in ('small', 'full'):
+        image_info[size] = {}
+
+        for side in ('front', 'back'):
+            full_image_url = getattr(postcard, side)
+            if not full_image_url:
+                continue
+
+            img_data = make_smaller_version_of_image(full_image_url,
+                                                     dimensions[size])
+            filename, (width, height) = img_data
+            image_info[size][side] = dict(filename=filename,
+                                          width=width,
+                                          height=height)
+    postcard.json_image_info = json.dumps(image_info)
 
     postcard._commit()
 
@@ -123,36 +143,15 @@ def chunks(l, n):
 
 @processed_asynchronously
 def generate_jsonp():
-    dimensions = dict(small=(215, 215),
-                      full=(800, 800))
-
     query = Postcard.query.filter_by(published=True, deleted=False).order_by(db.asc(Postcard.id))
     all_postcards = []
     for postcard in query:
         # make sure the images are in place
         if not postcard.json_image_info:
-            image_info = {}
-
-            for size in ('small', 'full'):
-                image_info[size] = {}
-
-                for side in ('front', 'back'):
-                    full_image_url = getattr(postcard, side)
-                    if not full_image_url:
-                        continue
-
-                    img_data = make_smaller_version_of_image(full_image_url,
-                                                             dimensions[size])
-                    filename, (width, height) = img_data
-                    image_info[size][side] = dict(filename=filename,
-                                                  width=width,
-                                                  height=height)
-
-            postcard.json_image_info = json.dumps(image_info)
-        else:
-            image_info = json.loads(postcard.json_image_info)
+            continue
 
         # add the postcard data
+        image_info = json.loads(postcard.json_image_info)
         data = dict(id=postcard.id,
                     date=str(postcard.date),
                     country=postcard.country,
