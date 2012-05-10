@@ -13,8 +13,6 @@ from postcards import app
 from postcards.models import db, Postcard
 from postcards.lib.queue import processed_asynchronously
 
-s3 = S3Connection(app.config['S3_ACCESS_KEY'], app.config['S3_SECRET_KEY'])
-bucket = s3.get_bucket(app.config['S3_BUCKET'], validate=False)
 DEFAULT_DATE = datetime.date(2010, 01, 01)
 CHUNK_SIZE = 28
 
@@ -22,6 +20,8 @@ def s3_url_from_filename(filename):
     return 'http://' + app.config['S3_BUCKET'] + '.s3.amazonaws.com/' + filename
 
 def upload_to_s3(filename, data, content_type):
+    s3 = S3Connection(app.config['S3_ACCESS_KEY'], app.config['S3_SECRET_KEY'])
+    bucket = s3.get_bucket(app.config['S3_BUCKET'], validate=False)
     key = bucket.new_key(filename)
     key.set_contents_from_string(
         data,
