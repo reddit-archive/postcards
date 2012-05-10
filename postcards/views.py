@@ -103,7 +103,7 @@ def unpublished():
     base_query = (Postcard.query.filter(Postcard.deleted == False)
                                 .filter(Postcard.published == False)
                                 .options(db.subqueryload('tags'))
-                                .order_by(db.desc(Postcard.date)))
+                                .order_by(db.asc(Postcard.date)))
     pagination = build_pagination(base_query)
 
     # patch in larger thumbnails
