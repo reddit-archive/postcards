@@ -101,7 +101,8 @@ def new_postcard_form():
 @app.route('/unpublished', methods=['GET'])
 def unpublished():
     base_query = (Postcard.query.filter(Postcard.deleted == False)
-                                .filter(Postcard.published == False)
+                                .filter(db.or_(Postcard.published == False,
+                                               Postcard.published == None))
                                 .options(db.subqueryload('tags'))
                                 .order_by(db.asc(Postcard.date)))
     pagination = build_pagination(base_query)
