@@ -142,7 +142,7 @@ def delete(id):
     postcard.deleted = True
     db.session.commit()
 
-    if request.headers['X-Requested-With'] == 'XMLHttpRequest':
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return 'success!'
     else:
         flash('postcard deleted!')
