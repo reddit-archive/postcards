@@ -5,8 +5,10 @@ import urllib
 from r2.models import Account, Subreddit, Link
 from r2.lib.db import queries
 from r2.lib.media import force_thumbnail
+from r2.lib.amqp import worker
 
 
+UPVOTE = True
 def submit_link(user, subreddit, title, url, thumb_url):
     account = Account._by_name(user)
     subreddit = Subreddit._by_name(subreddit)
@@ -20,8 +22,11 @@ def submit_link(user, subreddit, title, url, thumb_url):
     force_thumbnail(link, image_data)
 
     # various backend processing things
-    queries.queue_vote(account, link, True, ip)
+    queries.queue_vote(account, link, UPVOTE, ip)
     queries.new_link(link)
     queries.changed(link)
+
+    # wait for the amqp worker to finish up
+    worker.join()
 
     print link.make_permalink_slow()
