@@ -71,7 +71,7 @@ def submit_link_to_postcard(postcard_id):
         title_components += ["on", postcard.date.strftime('%d-%b-%Y')]
     title = " ".join(title_components)
 
-    postcard_url = 'http://www.reddit.com/about/postcards/#view/%d/front' % postcard.id
+    postcard_url = 'http://www.reddit.com/about/postcards/view/%d/front' % postcard.id
 
     thumbnail = postcard.front_thumb or postcard.back_thumb
     assert thumbnail
