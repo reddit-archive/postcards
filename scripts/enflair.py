@@ -1,10 +1,14 @@
 #!/usr/bin/python
 
-from r2.models import Account, Subreddit
+from r2.models import Account, Subreddit, NotFound
 
 def enflair(subreddit_name, account_name, flair_text, flair_class):
     sr = Subreddit._by_name(subreddit_name)
-    account = Account._by_name(account_name)
+
+    try:
+        account = Account._by_name(account_name)
+    except NotFound:
+        return
 
     sr.add_flair(account)
 
