@@ -4,7 +4,7 @@ import time
 import datetime
 
 from pylons import g
-from r2.models import Account, create_unclaimed_gold, send_system_message
+from r2.models import Account, create_unclaimed_gold, send_system_message, NotFound
 from r2.lib.utils import randstr
 
 
@@ -26,7 +26,13 @@ def send_claim_message(username, postcard_url):
                           0, REWARD, secret, now, None)
 
     claim_url = "http://www.reddit.com/thanks/" + secret
-    user = Account._by_name(username)
+
+    try:
+        user = Account._by_name(username)
+    except NotFound:
+        print "User %r not found :(" % username
+        return
+
     message = TEMPLATE % dict(postcard_url=postcard_url,
                               claim_url=claim_url,
                               gold_support_email=g.goldthanks_email)
