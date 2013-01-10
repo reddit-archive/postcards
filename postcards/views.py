@@ -62,7 +62,7 @@ def home():
 
     return render_template(
         'home.html',
-        url_base='http://' + app.config['S3_BUCKET'] + '.s3.amazonaws.com/',
+        url_base='//s3.amazonaws.com/' + app.config['S3_BUCKET'] + '/',
         DEFAULT_THUMB='noimage.png',
         pagination=pagination,
         search_query=search_query,
@@ -120,7 +120,7 @@ def unpublished():
 
     return render_template(
         'unpublished.html',
-        url_base='http://' + app.config['S3_BUCKET'] + '.s3.amazonaws.com/',
+        url_base='//s3.amazonaws.com/' + app.config['S3_BUCKET'] + '/',
         DEFAULT_THUMB='noimage-large.png',
         DEFAULT_THUMB_WIDTH=215,
         DEFAULT_THUMB_HEIGHT=215,
