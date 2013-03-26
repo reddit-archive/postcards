@@ -14,14 +14,14 @@ class Postcard(db.Model):
     date = db.Column(db.Date)
     latitude = db.Column(db.Numeric)
     longitude = db.Column(db.Numeric)
-    front = db.Column(db.String)
-    back = db.Column(db.String)
-    front_thumb = db.Column(db.String)
-    back_thumb = db.Column(db.String)
+    front = db.Column(db.String(1000))
+    back = db.Column(db.String(1000))
+    front_thumb = db.Column(db.String(1000))
+    back_thumb = db.Column(db.String(1000))
     deleted = db.Column(db.Boolean)
     published = db.Column(db.Boolean)
-    submission = db.Column(db.String)
-    json_image_info = db.Column(db.String)
+    submission = db.Column(db.String(1000))
+    json_image_info = db.Column(db.String(1000))
     tags = db.relationship("Tag")
 
     @staticmethod
@@ -39,11 +39,11 @@ class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     postcard_id = db.Column(db.Integer, db.ForeignKey('postcards.id'))
-    tag = db.Column(db.String)
+    tag = db.Column(db.String(1000))
 
 
 class QueuedJob(db.Model):
     __tablename__ = 'queue'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    handler = db.Column(db.String, nullable=False)
-    data = db.Column(db.String, nullable=False)
+    handler = db.Column(db.String(100), nullable=False)
+    data = db.Column(db.String(1000), nullable=False)
