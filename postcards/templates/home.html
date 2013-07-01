@@ -81,21 +81,21 @@ $(function () {
     <td><a href="http://www.reddit.com/user/{{ postcard.user }}">{{ postcard.user }}</a></td>
     <td>{{ ', '.join(postcard.text_tags) }}</td>
     {% if postcard.published and postcard.submission: %}
-    <td class="status-published" colspan="2"><a href="http://www.reddit.com{{ postcard.submission }}">Published</a></td>
+    <td class="status-published"><a href="http://www.reddit.com{{ postcard.submission }}">Published</a></td>
     {% elif postcard.published: %}
-    <td class="status-published" colspan="2">Publishing&hellip;</td>
+    <td class="status-published">Publishing&hellip;</td>
     {% else: %}
     <td>
         <form method="POST" action="{{ url_for('.publish', id=postcard.id) }}">
             <input type="submit" value="publish">
         </form>
     </td>
+    {% endif %}
     <td>
         <form method="POST" action="{{ url_for('.delete', id=postcard.id) }}">
             <input type="submit" value="delete">
         </form>
     </td>
-    {% endif %}
 </tr>
 {% endfor %}
 {% else %}

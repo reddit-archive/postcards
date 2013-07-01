@@ -8,7 +8,7 @@ from flaskext import wtf
 from postcards import app
 from postcards.models import db, Postcard, Tag
 from postcards.lib.utils import upload_image_to_s3, generate_thumbnails, submit_link_to_postcard, \
-                                send_gold_claim_message, enflair_user, generate_jsonp
+                                send_gold_claim_message, enflair_user, generate_jsonp, remove_all_images
 
 
 class PostcardForm(wtf.Form):
@@ -138,10 +138,15 @@ def upload():
 @app.route('/postcard/delete/<int:id>', methods=['POST', 'DELETE'])
 def delete(id):
     postcard = Postcard._byID(id)
-    if postcard.deleted or postcard.published:
+    if postcard.deleted:
         abort(403)
     postcard.deleted = True
     db.session.commit()
+
+    # clean up if necessary
+    if postcard.published:
+        remove_all_images(id)
+        generate_jsonp()
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return 'success!'

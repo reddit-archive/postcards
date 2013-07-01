@@ -119,6 +119,18 @@ def generate_thumbnails(postcard_id, width=70, height=70):
 
 
 @processed_asynchronously
+def remove_all_images(postcard_id):
+    postcard = Postcard._byID(postcard_id)
+    s3 = S3Connection(app.config['S3_ACCESS_KEY'], app.config['S3_SECRET_KEY'])
+    bucket = s3.get_bucket(app.config['S3_BUCKET'], validate=False)
+
+    for imagetype in ("front", "back", "front_thumb", "back_thumb"):
+        filename = getattr(postcard, imagetype, None)
+        if not filename: continue
+        bucket.delete_key(filename)
+
+
+@processed_asynchronously
 def send_gold_claim_message(postcard_id):
     postcard = Postcard._byID(postcard_id)
     assert postcard.submission
