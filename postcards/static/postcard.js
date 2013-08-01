@@ -25,7 +25,7 @@ p = {
         this.input.parent().append(this.throbber)
 
         this.request = $.ajax({
-            url: 'http://www.reddit.com/user/' + this.input.val() + '/.json',
+            url: 'https://pay.reddit.com/user/' + this.input.val() + '/.json',
             dataType: 'jsonp',
             jsonp: 'jsonp',
             timeout: 5000,
