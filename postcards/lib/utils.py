@@ -69,6 +69,8 @@ def submit_link_to_postcard(postcard_id):
     title_components = ["[Postcard] sent in from", country.name]
     if postcard.date != DEFAULT_DATE:
         title_components += ["on", postcard.date.strftime('%d-%b-%Y')]
+    if "nsfw" in postcard.text_tags:
+        title_components += ["(NSFW)"]
     title = " ".join(title_components)
 
     postcard_url = 'http://www.reddit.com/about/postcards/view/%d' % postcard.id
