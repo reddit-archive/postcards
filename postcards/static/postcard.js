@@ -1,3 +1,58 @@
+p = {
+    init: function (checkFormValid) {
+        this.input = $('#username')
+        this.checkFormValid = checkFormValid
+        this.request = null
+        this.throbber = $('<img src="//s3.amazonaws.com/redditstatic/throbber.gif">')
+        this.successMark = $('<img src="//s3.amazonaws.com/redditstatic/green-check.png">')
+        this.failureMark = $('<img src="//s3.amazonaws.com/redditstatic/icon-circle-exclamation.png">')
+
+        this.input.change($.proxy(this, 'onChange'))
+    },
+
+    onChange: function () {
+        if (this.request)
+            return
+
+        this.successMark.remove()
+        this.failureMark.remove()
+
+        if (!this.input.val()) {
+            this.onAccountNotFound()
+            return
+        }
+
+        this.input.parent().append(this.throbber)
+
+        this.request = $.ajax({
+            url: 'http://www.reddit.com/user/' + this.input.val() + '/.json',
+            dataType: 'jsonp',
+            jsonp: 'jsonp',
+            timeout: 5000,
+        })
+        this.request
+            .done($.proxy(this, 'onAccountFound'))
+            .fail($.proxy(this, 'onAccountNotFound'))
+            .always($.proxy(this, 'onRequestFinished'))
+    },
+
+    onAccountFound: function () {
+        this.input.data('valid', true)
+        this.input.parent().append(this.successMark)
+    },
+
+    onAccountNotFound: function () {
+        this.input.data('valid', false)
+        this.input.parent().append(this.failureMark)
+    },
+
+    onRequestFinished: function () {
+        this.request = null
+        this.throbber.remove()
+        this.checkFormValid()
+    },
+}
+
 $(function() {
     var geocoder = new google.maps.Geocoder()
     var geocodeResult = undefined
@@ -6,7 +61,7 @@ $(function() {
     function checkFormValid() {
         var isValid = (
             $("#origin").val() == geocodeResult &&
-            $("#username").val() != '' &&
+            $("#username").data('valid') &&
             $("#date").val() != '' &&
             filesUploaded >= 1
         )
@@ -16,6 +71,8 @@ $(function() {
         else
             $("#submit").attr('disabled', '')
     }
+
+    p.init(checkFormValid)
 
     $("#origin")
         .autocomplete({
