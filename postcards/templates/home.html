@@ -38,7 +38,7 @@ $(function () {
 <form action="/" method="GET">
 <fieldset>
     <input type="hidden" id="count" value="{{ pagination.per_page }}">
-    <input type="search" id="q" name="q" placeholder="search" incremental
+    <input type="search" id="q" name="q" placeholder="filter by username" incremental autocomplete="off"
         {% if search_query %}
         value="{{ search_query }}"
         {% endif %}
