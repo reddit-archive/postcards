@@ -69,6 +69,12 @@ def home():
         current_page=".home",
     )
 
+
+@app.route('/postcard/<int:id>')
+def view(id):
+    postcard = Postcard._byID(id)
+    return render_template("postcard.html", postcard=postcard)
+
 @app.route('/postcard/new', methods=['GET', 'POST'])
 def new_postcard_form():
     form = PostcardForm(request.form)

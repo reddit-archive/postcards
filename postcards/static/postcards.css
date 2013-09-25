@@ -163,3 +163,16 @@ fieldset {
 fieldset * {
     margin: 0;
 }
+
+h2 {
+    font-size: 100%;
+}
+
+.buttonbar {
+    overflow: auto;
+    margin-bottom: 1em;
+}
+
+.buttonbar form {
+    float: left;
+}

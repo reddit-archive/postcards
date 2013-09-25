@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>postcard #{{ postcard.id }}</h2>
+
+<div class="buttonbar">
+{% if not postcard.published: %}
+<form method="POST" action="{{ url_for('.publish', id=postcard.id) }}">
+    <input type="submit" value="publish">
+</form>
+{% endif %}
+
+<form method="POST" action="{{ url_for('.delete', id=postcard.id) }}">
+    <input type="submit" value="delete">
+</form>
+</div>
+
+<table>
+  <tr>
+    <th>User</th>
+    <td><a href="http://www.reddit.com/user/{{ postcard.user }}">{{ postcard.user }}</a></td>
+  </tr>
+  <tr>
+    <th>Date</th>
+    <td>{{ postcard.date }}</td>
+  </tr>
+  <tr>
+    <th>Country</th>
+    <td>{{ postcard.country }}</td>
+  </tr>
+  <tr>
+    <th>Latitude / Longitude</th>
+    <td>{{ postcard.latitude }} / {{ postcard.longitude }}</td>
+  </tr>
+  {% if postcard.submission: %}
+  <tr>
+    <th>Submission</th>
+    <td><a href="http://www.reddit.com{{ postcard.submission }}">http://www.reddit.com{{ postcard.submission }}</a></td>
+  </tr>
+  {% endif %}
+</table>
+
+{% endblock %}
