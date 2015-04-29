@@ -24,7 +24,7 @@ def submit_link(user, subreddit, title, url, thumb_url):
     # various backend processing things
     queries.queue_vote(account, link, UPVOTE, ip)
     queries.new_link(link)
-    queries.changed(link)
+    link.update_search_index()
 
     # wait for the amqp worker to finish up
     worker.join()
