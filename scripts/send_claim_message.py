@@ -35,5 +35,5 @@ def send_claim_message(username, postcard_url):
 
     message = TEMPLATE % dict(postcard_url=postcard_url,
                               claim_url=claim_url,
-                              gold_support_email=g.goldthanks_email)
+                              gold_support_email=g.goldsupport_email)
     send_system_message(user, "we got that postcard you sent us!", message)
