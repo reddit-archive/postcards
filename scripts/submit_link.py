@@ -15,7 +15,15 @@ def submit_link(user, subreddit, title, url, thumb_url):
     ip = '127.0.0.1'
 
     # submit the link
-    link = Link._submit(title, url, account, subreddit, ip, spam=False)
+    link = Link._submit(
+        is_self=False,
+        title=title,
+        content=url,
+        account=account,
+        sr=subreddit,
+        ip=ip,
+        spam=False,
+    )
 
     # force the thumbnail before scraper_q gets in the mix
     image_data = urllib.urlopen(thumb_url).read()
