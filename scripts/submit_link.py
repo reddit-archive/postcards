@@ -30,7 +30,6 @@ def submit_link(user, subreddit, title, url, thumb_url):
     force_thumbnail(link, image_data)
 
     # various backend processing things
-    queries.queue_vote(account, link, UPVOTE, ip)
     queries.new_link(link)
     link.update_search_index()
 
