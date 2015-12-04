@@ -19,7 +19,7 @@ def submit_link(user, subreddit, title, url, thumb_url):
         is_self=False,
         title=title,
         content=url,
-        account=account,
+        author=account,
         sr=subreddit,
         ip=ip,
         spam=False,
