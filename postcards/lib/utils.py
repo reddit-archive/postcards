@@ -94,11 +94,17 @@ def generate_thumbnails(postcard_id, width=70, height=70):
 
     postcard = Postcard._byID(postcard_id)
 
-    if postcard.front:
-        postcard.front_thumb, _ = make_smaller_version_of_image(postcard.front)
+    try:
+        if postcard.front:
+            postcard.front_thumb, _ = make_smaller_version_of_image(postcard.front)
 
-    if postcard.back:
-        postcard.back_thumb, _ = make_smaller_version_of_image(postcard.back)
+        if postcard.back:
+            postcard.back_thumb, _ = make_smaller_version_of_image(postcard.back)
+    except IOError as exc:
+        print "Failed to process image: %s" % exc
+        postcard.json_image_info = ""
+        postcard._commit()
+        return
 
     image_info = {}
     for size in ('small', 'full'):
@@ -135,8 +141,8 @@ def remove_all_images(postcard_id):
 @processed_asynchronously
 def send_gold_claim_message(postcard_id):
     postcard = Postcard._byID(postcard_id)
-    assert postcard.submission
-
+    if not postcard.submission:
+        return
     run_reddit_script('send_claim_message', [postcard.user, postcard.submission])
 
 
