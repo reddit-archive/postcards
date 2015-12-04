@@ -3,7 +3,7 @@
 import time
 import datetime
 
-from pylons import g
+from pylons import app_globals as g
 from r2.models import Account, create_unclaimed_gold, send_system_message, NotFound
 from r2.lib.utils import randstr
 
