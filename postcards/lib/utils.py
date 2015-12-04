@@ -65,6 +65,9 @@ def run_reddit_script(command, arguments):
 def submit_link_to_postcard(postcard_id):
     postcard = Postcard._byID(postcard_id)
 
+    if not getattr(postcard, "json_image_info", None):
+        return
+
     country = pycountry.countries.get(alpha2=postcard.country)
     title_components = ["[Postcard] sent in from", country.name]
     if postcard.date != DEFAULT_DATE:
