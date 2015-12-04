@@ -87,11 +87,15 @@ $(function () {
     {% elif postcard.published: %}
     <td class="status-published">Publishing&hellip;</td>
     {% else: %}
-    <td>
-        <form method="POST" action="{{ url_for('.publish', id=postcard.id) }}">
-            <input type="submit" value="publish">
-        </form>
-    </td>
+        {% if postcard.json_image_info: %}
+        <td>
+            <form method="POST" action="{{ url_for('.publish', id=postcard.id) }}">
+                <input type="submit" value="publish">
+            </form>
+        </td>
+        {% else: %}
+        <td>Blocked</td>
+        {% endif %}
     {% endif %}
     <td>
         <form method="POST" action="{{ url_for('.delete', id=postcard.id) }}">

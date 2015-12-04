@@ -4,7 +4,7 @@
 <h2>postcard #{{ postcard.id }}</h2>
 
 <div class="buttonbar">
-{% if not postcard.published: %}
+{% if postcard.json_image_info and not postcard.published: %}
 <form method="POST" action="{{ url_for('.publish', id=postcard.id) }}">
     <input type="submit" value="publish">
 </form>
