@@ -25,9 +25,12 @@ def submit_link(user, subreddit, title, url, thumb_url):
         spam=False,
     )
 
-    # force the thumbnail before scraper_q gets in the mix
-    image_data = urllib.urlopen(thumb_url).read()
-    force_thumbnail(link, image_data)
+    try:
+        # force the thumbnail before scraper_q gets in the mix
+        image_data = urllib.urlopen(thumb_url).read()
+        force_thumbnail(link, image_data)
+    except:
+        pass
 
     # various backend processing things
     queries.new_link(link)
