@@ -56,7 +56,7 @@
         <input type="hidden" id="origin_country" name="origin_country">
         <input type="hidden" id="origin_latitude" name="origin_latitude">
         <input type="hidden" id="origin_longitude" name="origin_longitude">
-        {{ form.csrf }}
+        {{ form.csrf_token }}
         <input type="submit" id="submit" disabled value="add postcard">
     </td>
 </tr>
